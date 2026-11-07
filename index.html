@@ -225,7 +225,6 @@
       <div class="panel-title">
         <div>
           <h2>ส่งงานใหม่</h2>
-          <div class="muted">ระบบจะตรวจรหัสจากรายชื่อ และเปลี่ยนชื่อไฟล์ให้อัตโนมัติ</div>
         </div>
         <div class="loader" id="submitLoader"><span class="spinner"></span>กำลังทำงาน...</div>
       </div>
@@ -253,7 +252,7 @@
           <div class="col-12">
             <label for="workFile">แนบไฟล์งาน</label>
             <input id="workFile" name="workFile" type="file" required>
-            <div class="muted" style="margin-top:6px">แนะนำให้ใช้ PDF หากเป็นรายงาน ระบบจะไม่ใช้ชื่อไฟล์เดิมของนักศึกษา แต่จะตั้งชื่อใหม่ให้อัตโนมัติ</div>
+            <div class="muted" style="margin-top:6px">รายงานแนะนำให้ส่งเป็นไฟล์ PDF</div>
           </div>
           <div class="col-12">
             <label for="studentNote">หมายเหตุถึงอาจารย์ ถ้ามี</label>
@@ -333,7 +332,6 @@
       <div class="panel-title">
         <div>
           <h2>งานที่เปิดรับตอนนี้</h2>
-          <div class="muted">รายการนี้ดึงจากชีต ASSIGNMENTS ที่มี Status = OPEN</div>
         </div>
       </div>
       <div id="openAssignments" class="assignments-list"></div>
@@ -600,10 +598,9 @@
     const hiddenSid = byId('hiddenStudentId');
     if (hiddenSid) hiddenSid.value = student.Student_ID || '';
 
-    if (warning) box.innerHTML += '<div class="notice warn">' + escapeHtml(warning) + '</div>';
+    // (ไม่แสดงข้อความเทคนิคเรื่อง Course_ID ให้นักศึกษาเห็น)
     if ((!assignments || !assignments.length) && appData.activeAssignments && appData.activeAssignments.length) {
       assignments = appData.activeAssignments;
-      box.innerHTML += '<div class="notice warn">ใช้รายการงานที่เปิดรับจากหน้าแรกเป็นตัวเลือกสำรอง</div>';
     }
 
     const select = byId('assignmentSelect');
