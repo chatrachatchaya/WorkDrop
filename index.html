@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <title>WorkDrop Class</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #eef8f8;
+      --card: #ffffff;
+      --ink: #15393b;
+      --muted: #627d7e;
+      --line: #d3e8e7;
+      --primary: #17807d;
+      --primary-dark: #11625f;
+      --primary-soft: #dcf2f0;
+      --tint2: #bfe6e2;
+      --green: #e3f3ea;   --green-ink: #2f7d52;
+      --yellow: #fdf5dc;  --yellow-ink: #8a6a12;
+      --orange: #fdeee2;  --orange-ink: #a5531f;
+      --red: #fdebea;     --red-ink: #b2403a;
+      --blue: #e6eef8;    --blue-ink: #2f5b8f;
+      --gray: #f2fafa;
+      --shadow: 0 1px 2px rgba(21,57,59,.04);
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Anuphan', 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    .shell { width: min(1100px, calc(100% - 32px)); margin: 0 auto; padding: 24px 0 48px; }
+
+    /* ---------- header ---------- */
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 16px;
+      align-items: stretch;
+      margin-bottom: 8px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand, .quick-card, .panel, .result-card, .assignment-card, .status-row {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .brand { padding: 24px; background: transparent; border: 0; box-shadow: none; padding-left: 0; }
+    .tag { display: inline-flex; gap: 6px; align-items: center; background: var(--primary-soft); color: var(--primary); padding: 4px 12px; border-radius: 999px; font-weight: 600; font-size: 13px; }
+    h1 { margin: 12px 0 4px; font-size: clamp(28px, 4vw, 40px); line-height: 1.15; letter-spacing: -.02em; color: var(--primary); font-weight: 700; }
+    .subtitle { color: var(--muted); font-size: 16px; margin: 0; }
+    .teacher { margin-top: 14px; font-weight: 600; color: var(--ink); font-size: 15px; }
+    .quick-card { padding: 20px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; }
+    .date-pill { align-self: flex-start; background: var(--gray); border: 1px solid var(--line); color: var(--muted); padding: 4px 12px; border-radius: 999px; font-weight: 500; font-size: 13px; font-family: 'Inter', 'Anuphan', sans-serif; }
+    .big-question { font-size: 20px; font-weight: 700; line-height: 1.3; margin: 6px 0; color: var(--ink); }
+    .nav { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 0; }
+
+    /* ---------- buttons ---------- */
+    .tab-btn, button, .link-btn {
+      border: 0;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 15px;
+      border-radius: 10px;
+      padding: 10px 18px;
+      transition: background .15s, border-color .15s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+    .tab-btn { background: #fff; border: 1.5px solid var(--line); color: var(--ink); }
+    .tab-btn:hover { background: var(--primary-soft); }
+    .tab-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+    button.primary { background: var(--primary); color: #fff; }
+    button.primary:hover { background: var(--primary-dark); }
+    button.secondary, .link-btn.secondary { background: var(--primary-soft); color: var(--primary); border: 1.5px solid var(--tint2); }
+    button.secondary:hover, .link-btn.secondary:hover { background: var(--tint2); }
+    button.ghost, .link-btn.ghost { background: #fff; color: var(--ink); border: 1.5px solid var(--line); }
+    button.ghost:hover { background: var(--primary-soft); }
+    button.danger { background: var(--red); color: var(--red-ink); }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ---------- panels ---------- */
+    .panel { padding: 24px; margin-top: 16px; }
+    .panel-title { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 16px; }
+    .panel-title h2 { margin: 0; font-size: 18px; font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 8px; }
+    .panel-title h2::before { content: ''; width: 4px; height: 18px; background: var(--primary); border-radius: 2px; }
+    .panel-title .muted { font-size: 13px; margin-top: 2px; }
+    .muted { color: var(--muted); }
+    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; }
+    .col-12 { grid-column: span 12; } .col-8 { grid-column: span 8; } .col-6 { grid-column: span 6; }
+    .col-4 { grid-column: span 4; } .col-3 { grid-column: span 3; }
+    label { display: block; font-weight: 500; font-size: 13px; margin: 0 0 6px; color: var(--muted); }
+    input, select, textarea {
+      width: 100%;
+      border: 1.5px solid var(--line);
+      background: var(--gray);
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-family: inherit;
+      font-size: 15px;
+      color: var(--ink);
+      outline: none;
+      transition: border-color .15s;
+    }
+    textarea { min-height: 86px; resize: vertical; }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px var(--primary-soft); }
+    input[type=file] { background: #fff; padding: 10px; }
+    .student-card, .receipt-card {
+      border: 1px solid var(--line);
+      background: var(--gray);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 14px 0;
+    }
+    .student-name { font-size: 18px; font-weight: 700; color: var(--ink); margin: 0 0 2px; }
+    .assignments-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 4px; }
+    .assignment-card { padding: 16px 18px; }
+    .assignment-card h3 { margin: 8px 0 4px; font-size: 16px; font-weight: 600; }
+
+    /* ---------- pills / notices ---------- */
+    .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-weight: 600; font-size: 12.5px; white-space: nowrap; }
+    .pill.open, .pill.ok { background: var(--green); color: var(--green-ink); }
+    .pill.wait { background: var(--yellow); color: var(--yellow-ink); }
+    .pill.checked { background: var(--blue); color: var(--blue-ink); }
+    .pill.revision { background: var(--orange); color: var(--orange-ink); }
+    .pill.late { background: var(--red); color: var(--red-ink); }
+    .pill.none { background: var(--gray); color: var(--muted); border: 1px solid var(--line); }
+    .notice { padding: 12px 16px; border-radius: 10px; border: 1px solid var(--line); background: #fff; margin: 12px 0; font-size: 14px; font-weight: 500; }
+    .notice.error { background: var(--red); color: var(--red-ink); border-color: #f3c9c5; }
+    .notice.success { background: var(--green); color: var(--green-ink); border-color: #bfe2cd; }
+    .notice.warn { background: var(--yellow); color: var(--yellow-ink); border-color: #efdfa8; }
+    .status-row { box-shadow: none; padding: 14px 16px; display: grid; grid-template-columns: 1.2fr .8fr auto; gap: 12px; align-items: center; margin-bottom: 10px; }
+    .status-row h3 { margin: 0 0 2px; font-size: 16px; font-weight: 600; }
+
+    /* ---------- KPIs / table ---------- */
+    .kpis { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; margin: 14px 0; }
+    .kpi { background: var(--gray); border-radius: 10px; padding: 12px; text-align: center; }
+    .kpi .num { font-size: 24px; font-weight: 700; color: var(--primary); line-height: 1.1; font-family: 'Inter', 'Anuphan', sans-serif; }
+    .kpi .txt { color: var(--muted); margin-top: 4px; font-size: 12px; }
+    .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+    table { border-collapse: collapse; width: 100%; min-width: 1040px; }
+    th, td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; font-size: 14px; }
+    th { background: var(--gray); color: var(--muted); font-weight: 600; font-size: 12.5px; position: sticky; top: 0; z-index: 1; }
+    tr:hover td { background: #f6fcfc; }
+    .small-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .small-actions button, .small-actions a { padding: 5px 10px; font-size: 13px; }
+    .loader { display: none; align-items: center; gap: 8px; color: var(--primary); font-weight: 600; font-size: 14px; }
+    .loader.show { display: flex; }
+    .spinner { width: 16px; height: 16px; border-radius: 50%; border: 3px solid var(--tint2); border-top-color: var(--primary); animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hidden { display: none !important; }
+    #clientDebugBox { display: none !important; }
+    footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+    @media (max-width: 850px) {
+      .hero { grid-template-columns: 1fr; }
+      .brand { padding: 0; }
+      .grid { grid-template-columns: 1fr; }
+      .col-12, .col-8, .col-6, .col-4, .col-3 { grid-column: span 1; }
+      .assignments-list { grid-template-columns: 1fr; }
+      .status-row { grid-template-columns: 1fr; }
+      .kpis { grid-template-columns: repeat(2, 1fr); }
+      .panel { padding: 18px; }
+      .nav .tab-btn { flex: 1; padding: 10px 8px; font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="brand">
+        <span class="tag">📥 WorkDrop Class</span>
+        <h1 id="systemName">WorkDrop Class</h1>
+        <p class="subtitle" id="subtitle">ระบบรับงานออนไลน์และตรวจสอบสถานะการส่งงาน</p>
+        <div class="teacher" id="teacherName">ผศ.ดร.ฉัตรชัชชญาน์ โชติชญาณ์พงศ์</div>
+      </div>
+      <div class="quick-card">
+        <div class="date-pill" id="serverTime">กำลังโหลดเวลา...</div>
+        <div>
+          <div class="big-question" id="heroQuestion">พร้อมส่งงานหรือยัง?</div>
+          <div class="muted">กรอกรหัสนักศึกษา → ระบบดึงชื่อให้ยืนยัน → เลือกงาน → แนบไฟล์ → รับเลขรับงาน</div>
+        </div>
+        <div class="nav">
+          <button class="tab-btn active" data-tab="submit">ส่งงานใหม่</button>
+          <button class="tab-btn" data-tab="status">ตรวจสอบสถานะ</button>
+          <button class="tab-btn" data-tab="teacher">สำหรับอาจารย์</button>
+        </div>
+      </div>
+    </section>
+
+    <div id="globalNotice"></div>
+
+    <section id="tab-submit" class="panel">
+      <div class="panel-title">
+        <div>
+          <h2>ส่งงานใหม่</h2>
+          <div class="muted">ระบบจะตรวจรหัสจากรายชื่อ และเปลี่ยนชื่อไฟล์ให้อัตโนมัติ</div>
+        </div>
+        <div class="loader" id="submitLoader"><span class="spinner"></span>กำลังทำงาน...</div>
+      </div>
+
+      <div class="grid">
+        <div class="col-8">
+          <label for="submitStudentId">รหัสนักศึกษา</label>
+          <input id="submitStudentId" placeholder="เช่น 69172110620-6" autocomplete="off">
+        </div>
+        <div class="col-4" style="align-self:end">
+          <button class="secondary" id="lookupBtn" type="button">ตรวจรหัสและดึงงาน</button>
+        </div>
+      </div>
+
+      <div id="submitStudentBox"></div>
+      <div id="clientDebugBox"></div>
+
+      <div id="submitFormBox" class="hidden">
+        <form id="submissionForm" class="grid" onsubmit="return false;">
+          <input id="hiddenStudentId" name="studentId" type="hidden">
+          <div class="col-12">
+            <label for="assignmentSelect">เลือกงานที่ต้องการส่ง</label>
+            <select id="assignmentSelect" name="assignmentId"></select>
+          </div>
+          <div class="col-12">
+            <label for="workFile">แนบไฟล์งาน</label>
+            <input id="workFile" name="workFile" type="file" required>
+            <div class="muted" style="margin-top:6px">แนะนำให้ใช้ PDF หากเป็นรายงาน ระบบจะไม่ใช้ชื่อไฟล์เดิมของนักศึกษา แต่จะตั้งชื่อใหม่ให้อัตโนมัติ</div>
+          </div>
+          <div class="col-12">
+            <label for="studentNote">หมายเหตุถึงอาจารย์ ถ้ามี</label>
+            <textarea id="studentNote" name="studentNote" placeholder="เช่น ส่งแก้ไขครั้งที่ 2 / ไฟล์แนบเป็น PDF รวมเล่ม"></textarea>
+          </div>
+          <div class="col-12">
+            <button class="primary" id="submitWorkBtn" type="button">ส่งงานและรับเลขรับงาน</button>
+          </div>
+        </form>
+      </div>
+      <div id="receiptBox"></div>
+    </section>
+
+    <section id="tab-status" class="panel hidden">
+      <div class="panel-title">
+        <div>
+          <h2>ตรวจสอบสถานะการส่งงาน</h2>
+          <div class="muted">กรอกรหัสนักศึกษาเพื่อดูงานทั้งหมด: ส่งแล้ว / ยังไม่ส่ง / รอตรวจ / ต้องแก้ไข</div>
+        </div>
+        <div class="loader" id="statusLoader"><span class="spinner"></span>กำลังค้นหา...</div>
+      </div>
+      <div class="grid">
+        <div class="col-8">
+          <label for="statusStudentId">รหัสนักศึกษา</label>
+          <input id="statusStudentId" placeholder="เช่น 69172110620-6" autocomplete="off">
+        </div>
+        <div class="col-4" style="align-self:end">
+          <button class="secondary" id="checkStatusBtn" type="button">ตรวจสอบสถานะ</button>
+        </div>
+      </div>
+      <div id="statusResult"></div>
+    </section>
+
+    <section id="tab-teacher" class="panel hidden">
+      <div class="panel-title">
+        <div>
+          <h2>Dashboard อาจารย์</h2>
+          <div class="muted">ดูสรุปส่งงาน เปลี่ยนสถานะ และ export รายชื่อคนยังไม่ส่ง</div>
+        </div>
+        <div class="loader" id="teacherLoader"><span class="spinner"></span>กำลังโหลด...</div>
+      </div>
+
+      <div class="grid">
+        <div class="col-3">
+          <label for="teacherPin">Teacher PIN</label>
+          <input id="teacherPin" type="password" placeholder="PIN">
+        </div>
+        <div class="col-3">
+          <label for="teacherCourse">รายวิชา</label>
+          <select id="teacherCourse"><option value="">ทุกวิชา</option></select>
+        </div>
+        <div class="col-3">
+          <label for="teacherAssignment">งาน</label>
+          <select id="teacherAssignment"><option value="">ทุกงาน</option></select>
+        </div>
+        <div class="col-3">
+          <label for="teacherStatus">สถานะ</label>
+          <select id="teacherStatus">
+            <option value="">ทุกสถานะ</option>
+            <option value="ยังไม่ส่ง">ยังไม่ส่ง</option>
+            <option value="รอตรวจ">รอตรวจ</option>
+            <option value="ตรวจแล้ว">ตรวจแล้ว</option>
+            <option value="ต้องแก้ไข">ต้องแก้ไข</option>
+            <option value="LATE">ส่งล่าช้า</option>
+          </select>
+        </div>
+        <div class="col-12" style="display:flex; gap:10px; flex-wrap:wrap">
+          <button class="primary" id="loadTeacherDashboardBtn" type="button">โหลด Dashboard</button>
+          <button class="secondary" id="exportMissingListBtn" type="button">สร้างชีตรายชื่อคนยังไม่ส่ง</button>
+        </div>
+      </div>
+
+      <div id="teacherDashboard"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title">
+        <div>
+          <h2>งานที่เปิดรับตอนนี้</h2>
+          <div class="muted">รายการนี้ดึงจากชีต ASSIGNMENTS ที่มี Status = OPEN</div>
+        </div>
+      </div>
+      <div id="openAssignments" class="assignments-list"></div>
+    </section>
+
+    <footer id="footerText">© 2026 Chatrachatchaya, Ph.D, Applied Chemistry, RMUTI</footer>
+  </div>
+
+<script>
+  /* =====================================================
+   *  ตั้งค่า: วาง URL ของ Web App (ลงท้าย /exec) ที่ได้จาก Deploy ของ WorkDrop
+   * ===================================================== */
+  const API_URL = 'https://script.google.com/macros/s/AKfycbyUzzjsdBvWfX0c4SYQ9pq0yTKMzTKVxPHIs8U5Qc1vdT-LBOGp5IhlaEqbRRJxUP71-w/exec';
+
+  // เรียก API (POST แบบ text/plain → ไม่มี CORS preflight)
+  async function api(action, data = {}, retries = 2) {
+    for (let i = 0; ; i++) {
+      let text = '';
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(Object.assign({ action }, data)) });
+        text = await res.text();
+      } catch (e) {
+        if (!navigator.onLine) return { ok: false, message: 'ไม่มีอินเทอร์เน็ต กรุณาตรวจสอบการเชื่อมต่อ' };
+        if (i >= retries) return { ok: false, network: true, message: 'เชื่อมต่อระบบไม่สำเร็จ — ตรวจว่า Deploy แบบ Who has access: Anyone และ URL ลงท้าย /exec' };
+        await new Promise(r => setTimeout(r, 800 * 2 ** i));
+        continue;
+      }
+      let j;
+      try { j = JSON.parse(text); } catch (e) {
+        return { ok: false, message: /doPost/i.test(text) ? 'Apps Script ยังเป็นโค้ดเก่า — วาง Code.gs ใหม่ แล้ว Deploy เป็น New version'
+          : /sign ?in|accounts\.google/i.test(text) ? 'Apps Script ต้องล็อกอิน — ตั้ง Who has access เป็น Anyone'
+          : 'ระบบตอบกลับไม่ถูกต้อง — ตรวจว่า Deploy โค้ดใหม่แล้ว' };
+      }
+      if (j && j.busy && i < retries) { await new Promise(r => setTimeout(r, 1500 * 2 ** i)); continue; }
+      return j;
+    }
+  }
+
+  function readFileBase64(file) {
+    return new Promise((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onload = () => resolve(String(fr.result).split(',')[1] || '');
+      fr.onerror = () => reject(new Error('อ่านไฟล์ไม่สำเร็จ กรุณาเลือกไฟล์ใหม่'));
+      fr.readAsDataURL(file);
+    });
+  }
+
+  let appData = {};
+  let currentStudent = null;
+  let currentAssignments = [];
+  let teacherCoursesCache = [];
+  let teacherAssignmentsCache = [];
+  let teacherDashboardHasLoaded = false;
+  let teacherAutoLoadTimer = null;
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+
+  window.addEventListener('load', async () => {
+    bindActions();
+    if (API_URL.includes('วาง_DEPLOYMENT_ID')) {
+      return showGlobal('ยังไม่ได้ตั้งค่า API_URL ในไฟล์ index.html', 'error');
+    }
+    initApp(await api('init'), false);
+    if (location.hash === '#status') switchTab('status');
+    if (location.hash === '#teacher') switchTab('teacher');
+  });
+
+  function bindActions() {
+    const bind = (id, fn) => {
+      const el = byId(id);
+      if (el && !el.dataset.bound) {
+        el.dataset.bound = '1';
+        el.addEventListener('click', fn);
+      }
+    };
+    bind('lookupBtn', lookupSubmitStudent);
+    bind('submitWorkBtn', submitWork);
+    bind('checkStatusBtn', checkStatus);
+    bind('loadTeacherDashboardBtn', loadTeacherDashboard);
+    bind('exportMissingListBtn', exportMissingList);
+
+    const teacherCourse = byId('teacherCourse');
+    if (teacherCourse && !teacherCourse.dataset.boundChange) {
+      teacherCourse.dataset.boundChange = '1';
+      teacherCourse.addEventListener('change', () => {
+        updateTeacherAssignmentOptions();
+        queueTeacherDashboardReload();
+      });
+    }
+    const teacherAssignment = byId('teacherAssignment');
+    if (teacherAssignment && !teacherAssignment.dataset.boundChange) {
+      teacherAssignment.dataset.boundChange = '1';
+      teacherAssignment.addEventListener('change', queueTeacherDashboardReload);
+    }
+    const teacherStatus = byId('teacherStatus');
+    if (teacherStatus && !teacherStatus.dataset.boundChange) {
+      teacherStatus.dataset.boundChange = '1';
+      teacherStatus.addEventListener('change', queueTeacherDashboardReload);
+    }
+    const teacherPin = byId('teacherPin');
+    try { if (teacherPin && !teacherPin.value) teacherPin.value = sessionStorage.getItem('wd_pin') || ''; } catch (e) {}
+    if (teacherPin && !teacherPin.dataset.boundEnter) {
+      teacherPin.dataset.boundEnter = '1';
+      teacherPin.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); loadTeacherDashboard(); }
+      });
+    }
+
+    const sidInput = byId('submitStudentId');
+    if (sidInput && !sidInput.dataset.boundEnter) {
+      sidInput.dataset.boundEnter = '1';
+      sidInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); lookupSubmitStudent(); }
+      });
+    }
+  }
+
+  function canCallServer_() { return true; }
+
+  function errorMessage_(err) {
+    return (err && err.message) ? err.message : (err ? String(err) : 'ไม่ทราบรายละเอียดข้อผิดพลาด');
+  }
+
+  function initApp(res, fromBootstrap) {
+    if (!res || !res.ok) {
+      showGlobal((res && res.message) || 'โหลดข้อมูลไม่สำเร็จ', 'error');
+      renderDiagnostics((res && res.diagnostics) || {}, fromBootstrap ? 'server-bootstrap-error' : 'client-error');
+      return;
+    }
+    appData = res;
+    showGlobal('', '');
+    // ใช้ชื่อระบบแบบไม่เป็นทางการสำหรับหน้าเว็บนักศึกษา
+    byId('systemName').textContent = 'WorkDrop Class';
+    byId('subtitle').textContent = res.subtitle;
+    byId('teacherName').textContent = res.teacherName;
+    byId('footerText').textContent = res.footer;
+    byId('serverTime').textContent = 'เวลาเซิร์ฟเวอร์: ' + res.serverTime;
+    renderOpenAssignments(res.activeAssignments || []);
+    fillTeacherFilters(res.courses || [], res.activeAssignments || []);
+    if (res.diagnostics) renderDiagnostics(res.diagnostics, fromBootstrap ? 'server-bootstrap-ok' : 'client-refresh-ok');
+  }
+
+  function renderDiagnostics(d, source) {
+    // ซ่อนกล่อง Diagnostics สำหรับหน้าใช้งานจริง
+    return;
+  }
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    ['submit','status','teacher'].forEach(t => byId('tab-' + t).classList.toggle('hidden', t !== tab));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function renderOpenAssignments(list) {
+    const box = byId('openAssignments');
+    if (!list.length) {
+      box.innerHTML = '<div class="notice warn">ยังไม่มีงานที่เปิดรับในตอนนี้</div>';
+      return;
+    }
+    box.innerHTML = list.map(a => {
+      const openClose = [
+        a.Open_Date_Display ? `<div class="muted">เปิดรับ: ${escapeHtml(a.Open_Date_Display)}</div>` : '',
+        a.Close_Date_Display ? `<div class="muted">ปิดรับ: ${escapeHtml(a.Close_Date_Display)}</div>` : ''
+      ].filter(Boolean).join('');
+      return `
+        <div class="assignment-card">
+          <span class="pill open">เปิดรับงาน</span>
+          <h3>${escapeHtml(a.Assignment_Name)}</h3>
+          <div class="muted">${escapeHtml(a.Course_Name || a.Course_ID)}</div>
+          <div style="margin-top:8px"><b>กำหนดส่ง:</b> ${escapeHtml(a.Due_Date_Display || '-')}</div>
+          ${openClose}
+          ${a.Description ? `<div class="muted" style="margin-top:6px">${escapeHtml(a.Description)}</div>` : ''}
+        </div>
+      `;
+    }).join('');
+  }
+
+  function fillTeacherFilters(courses, assignments) {
+    teacherCoursesCache = Array.isArray(courses) ? courses.slice() : [];
+    teacherAssignmentsCache = Array.isArray(assignments) ? assignments.slice() : [];
+
+    const currentCourse = byId('teacherCourse').value || '';
+    const currentAssignment = byId('teacherAssignment').value || '';
+
+    byId('teacherCourse').innerHTML = '<option value="">ทุกวิชา</option>' + teacherCoursesCache.map(c => `<option value="${escapeAttr(c.Course_ID)}">${escapeHtml(c.Course_ID)} - ${escapeHtml(c.Course_Name)} ${c.Section ? '(' + escapeHtml(c.Section) + ')' : ''}</option>`).join('');
+
+    if (currentCourse && teacherCoursesCache.some(c => String(c.Course_ID) === String(currentCourse))) {
+      byId('teacherCourse').value = currentCourse;
+    }
+    updateTeacherAssignmentOptions(currentAssignment);
+  }
+
+  function updateTeacherAssignmentOptions(preferredAssignmentId) {
+    const selectedCourse = byId('teacherCourse').value || '';
+    const selectedAssignment = preferredAssignmentId !== undefined ? preferredAssignmentId : (byId('teacherAssignment').value || '');
+
+    let list = teacherAssignmentsCache || [];
+    if (selectedCourse) {
+      list = list.filter(a => String(a.Course_ID || '').trim().toLowerCase() === String(selectedCourse).trim().toLowerCase());
+    }
+
+    byId('teacherAssignment').innerHTML = '<option value="">ทุกงาน</option>' + list.map(a => `<option value="${escapeAttr(a.Assignment_ID)}">${escapeHtml(a.Assignment_ID)} - ${escapeHtml(a.Assignment_Name)}</option>`).join('');
+
+    if (selectedAssignment && list.some(a => String(a.Assignment_ID) === String(selectedAssignment))) {
+      byId('teacherAssignment').value = selectedAssignment;
+    } else {
+      byId('teacherAssignment').value = '';
+    }
+  }
+
+  function queueTeacherDashboardReload() {
+    if (!byId('teacherPin').value) return;
+    clearTimeout(teacherAutoLoadTimer);
+    teacherAutoLoadTimer = setTimeout(() => loadTeacherDashboard(), 250);
+  }
+
+  function updateTeacherFiltersFromDashboardResponse(res) {
+    if (!res || !res.filters) return;
+    const currentCourse = byId('teacherCourse').value || '';
+    const currentAssignment = byId('teacherAssignment').value || '';
+
+    const courses = (res.filters.courses && res.filters.courses.length) ? res.filters.courses : teacherCoursesCache;
+    const assignments = (res.filters.assignments && res.filters.assignments.length) ? res.filters.assignments : teacherAssignmentsCache;
+
+    if (assignments && assignments.length) teacherAssignmentsCache = assignments.slice();
+    if (courses && courses.length) teacherCoursesCache = courses.slice();
+
+    byId('teacherCourse').innerHTML = '<option value="">ทุกวิชา</option>' + teacherCoursesCache.map(c => `<option value="${escapeAttr(c.Course_ID)}">${escapeHtml(c.Course_ID)} - ${escapeHtml(c.Course_Name)} ${c.Section ? '(' + escapeHtml(c.Section) + ')' : ''}</option>`).join('');
+    if (currentCourse && teacherCoursesCache.some(c => String(c.Course_ID) === String(currentCourse))) byId('teacherCourse').value = currentCourse;
+
+    updateTeacherAssignmentOptions(currentAssignment);
+  }
+
+  function lookupSubmitStudent() {
+    const sid = byId('submitStudentId').value.trim();
+    byId('receiptBox').innerHTML = '';
+    byId('clientDebugBox').innerHTML = '';
+    byId('submitFormBox').classList.add('hidden');
+    if (!sid) return showBox('submitStudentBox', 'กรุณากรอกรหัสนักศึกษาก่อน', 'warn');
+    if (!canCallServer_('submitStudentBox')) return;
+
+    showBox('submitStudentBox', 'กำลังตรวจรหัสนักศึกษาและดึงรายการงาน...', 'warn');
+    setLoader('submitLoader', true);
+    api('lookup', { studentId: sid }).then(res => {
+      setLoader('submitLoader', false);
+      if (!res || !res.ok) return renderStudentLookupError(res || {message:'ไม่พบข้อมูล'}, 'submitStudentBox');
+      currentStudent = res.student;
+      currentAssignments = res.assignments || [];
+      renderSubmitStudent(res.student, currentAssignments, res.warning || '');
+    });
+  }
+
+  function renderSubmitStudent(student, assignments, warning) {
+    const box = byId('submitStudentBox');
+    box.innerHTML = `
+      <div class="student-card">
+        <p class="student-name">${escapeHtml(student.Name)}</p>
+        <div class="muted">รหัส ${escapeHtml(student.Student_ID)} | กลุ่ม ${escapeHtml(student.Section)} | รายวิชา ${escapeHtml(student.Course_ID)}</div>
+        <div style="margin-top:10px"><span class="pill ok">ยืนยันตัวตนจากรายชื่อแล้ว</span></div>
+      </div>`;
+
+    const hiddenSid = byId('hiddenStudentId');
+    if (hiddenSid) hiddenSid.value = student.Student_ID || '';
+
+    if (warning) box.innerHTML += '<div class="notice warn">' + escapeHtml(warning) + '</div>';
+    if ((!assignments || !assignments.length) && appData.activeAssignments && appData.activeAssignments.length) {
+      assignments = appData.activeAssignments;
+      box.innerHTML += '<div class="notice warn">ใช้รายการงานที่เปิดรับจากหน้าแรกเป็นตัวเลือกสำรอง</div>';
+    }
+
+    const select = byId('assignmentSelect');
+    if (!assignments.length) {
+      byId('submitFormBox').classList.add('hidden');
+      box.innerHTML += '<div class="notice warn">ยังไม่มีงานที่เปิดรับสำหรับรายวิชาของนักศึกษาคนนี้</div>';
+      return;
+    }
+    select.innerHTML = assignments.map(a => `<option value="${escapeAttr(a.Assignment_ID)}">${escapeHtml(a.Assignment_Name)} | กำหนด ${escapeHtml(a.Due_Date_Display || '-')}</option>`).join('');
+    byId('submitFormBox').classList.remove('hidden');
+  }
+
+  async function submitWork() {
+    if (!currentStudent) return showGlobal('กรุณาตรวจรหัสนักศึกษาก่อนส่งงาน', 'warn');
+    if (!canCallServer_('receiptBox')) return;
+
+    const form = byId('submissionForm');
+    const fileInput = byId('workFile');
+    const assignmentValue = byId('assignmentSelect').value;
+    if (!assignmentValue) return showBox('receiptBox', 'กรุณาเลือกงานก่อนส่ง', 'warn');
+    if (!fileInput.files || !fileInput.files[0]) return showBox('receiptBox', 'กรุณาเลือกไฟล์ก่อนส่ง', 'warn');
+
+    const hiddenSid = byId('hiddenStudentId');
+    if (hiddenSid) hiddenSid.value = currentStudent.Student_ID || byId('submitStudentId').value.trim();
+
+    const file = fileInput.files[0];
+    const maxMb = Number((currentAssignments.find(a => String(a.Assignment_ID) === String(assignmentValue)) || {}).Max_File_MB || (appData.config && appData.config.MAX_FILE_MB_DEFAULT) || 15);
+    if (file.size > maxMb * 1024 * 1024) {
+      return showBox('receiptBox', 'ไฟล์นี้ใหญ่เกิน ' + maxMb + ' MB กรุณาลดขนาดไฟล์ก่อนส่ง', 'error');
+    }
+
+    setLoader('submitLoader', true);
+    byId('submitWorkBtn').disabled = true;
+    byId('clientDebugBox').innerHTML = '';
+    const sizeMb = (file.size / 1024 / 1024).toFixed(1);
+    const t0 = Date.now();
+    const tick = () => showBox('receiptBox', `กำลังอัปโหลด ${file.name} (${sizeMb} MB) … ${Math.round((Date.now() - t0) / 1000)} วินาที — อย่าปิดหน้านี้`, 'warn');
+    tick();
+    const timer = setInterval(tick, 1000);
+
+    let res;
+    try {
+      const base64 = await readFileBase64(file);
+      // ไม่ retry อัตโนมัติ กันส่งซ้ำโดยไม่ตั้งใจ
+      res = await api('submit', {
+        studentId: hiddenSid ? hiddenSid.value : currentStudent.Student_ID,
+        assignmentId: assignmentValue,
+        note: byId('studentNote').value,
+        file: { name: file.name, mimeType: file.type || 'application/octet-stream', base64 }
+      }, 0);
+    } catch (err) {
+      res = { ok: false, message: errorMessage_(err) };
+    }
+    clearInterval(timer);
+    setLoader('submitLoader', false);
+    byId('submitWorkBtn').disabled = false;
+    if (!res || !res.ok) {
+      const extra = res && res.network ? ' — ก่อนกดส่งใหม่ ให้ไปที่แท็บ "ตรวจสอบสถานะ" ดูก่อนว่างานเข้าระบบแล้วหรือยัง' : '';
+      return showBox('receiptBox', ((res && res.message) || 'ส่งงานไม่สำเร็จ') + extra, 'error');
+    }
+    renderReceipt(res);
+    byId('workFile').value = '';
+    byId('studentNote').value = '';
+  }
+
+  function renderReceipt(res) {
+    const latePill = res.lateStatus === 'LATE' ? '<span class="pill late">ส่งล่าช้า</span>' : '<span class="pill ok">ส่งทันเวลา</span>';
+    byId('receiptBox').innerHTML = `
+      <div class="receipt-card">
+        <div class="notice success"><b>ส่งงานเรียบร้อยแล้ว</b> โปรดเก็บเลขรับงานไว้เป็นหลักฐาน</div>
+        <div class="grid">
+          <div class="col-6"><label>เลขรับงาน</label><div style="font-size:22px;font-weight:900;color:var(--primary)">${escapeHtml(res.receiptId)}</div></div>
+          <div class="col-6"><label>เวลาส่ง</label><div>${escapeHtml(res.timestamp)}</div></div>
+          <div class="col-6"><label>ผู้ส่ง</label><div>${escapeHtml(res.student.Name)} (${escapeHtml(res.student.Student_ID)})</div></div>
+          <div class="col-6"><label>งาน</label><div>${escapeHtml(res.assignment.Assignment_Name)}</div></div>
+          <div class="col-6"><label>Version</label><div>V${escapeHtml(res.version)}</div></div>
+          <div class="col-6"><label>สถานะ</label><div>${latePill} <span class="pill wait">รอตรวจ</span></div></div>
+        </div>
+        <div class="muted" style="margin-top:12px">แคปหน้าจอนี้เก็บไว้เป็นหลักฐานการส่งงาน</div>
+      </div>`;
+  }
+
+  function checkStatus() {
+    const sid = byId('statusStudentId').value.trim();
+    if (!sid) return showBox('statusResult', 'กรุณากรอกรหัสนักศึกษาก่อน', 'warn');
+    setLoader('statusLoader', true);
+    api('status', { studentId: sid }).then(res => {
+      setLoader('statusLoader', false);
+      if (!res || !res.ok) return renderStudentLookupError(res || {}, 'statusResult');
+      renderStatus(res);
+    });
+  }
+
+  function renderStatus(res) {
+    const s = res.student;
+    const k = res.summary;
+    const rows = res.items || [];
+    byId('statusResult').innerHTML = `
+      <div class="student-card">
+        <p class="student-name">${escapeHtml(s.Name)}</p>
+        <div class="muted">รหัส ${escapeHtml(s.Student_ID)} | กลุ่ม ${escapeHtml(s.Section)} | รายวิชา ${escapeHtml(s.Course_ID)}</div>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><div class="num">${k.total}</div><div class="txt">งานทั้งหมด</div></div>
+        <div class="kpi"><div class="num">${k.submitted}</div><div class="txt">ส่งแล้ว</div></div>
+        <div class="kpi"><div class="num">${k.notSubmitted}</div><div class="txt">ยังไม่ส่ง</div></div>
+        <div class="kpi"><div class="num">${k.late}</div><div class="txt">ล่าช้า</div></div>
+        <div class="kpi"><div class="num">${k.revision}</div><div class="txt">ต้องแก้ไข</div></div>
+        <div class="kpi"><div class="num">${k.checked}</div><div class="txt">ตรวจแล้ว</div></div>
+        <div class="kpi"><div class="num">${k.total ? Math.round(k.submitted / k.total * 100) : 0}%</div><div class="txt">ความครบถ้วน</div></div>
+      </div>
+      ${rows.map(renderStatusRow).join('') || '<div class="notice warn">ยังไม่มีรายการงานสำหรับรายวิชานี้</div>'}`;
+  }
+
+  function renderStatusRow(i) {
+    const submittedPill = i.Is_Submitted ? '<span class="pill ok">ส่งแล้ว</span>' : '<span class="pill none">ยังไม่ส่ง</span>';
+    const latePill = i.Late_Status === 'LATE' ? '<span class="pill late">ล่าช้า</span>' : '';
+    const checkPill = statusPill(i.Check_Status);
+    const fileLink = i.File_URL ? `<a class="link-btn secondary" href="${escapeAttr(i.File_URL)}" target="_blank">เปิดไฟล์</a>` : '';
+    return `
+      <div class="status-row">
+        <div>
+          <h3>${escapeHtml(i.Assignment_Name)}</h3>
+          <div class="muted">${escapeHtml(i.Course_Name)} | กำหนด ${escapeHtml(i.Due_Date || '-')}</div>
+          ${i.Teacher_Note ? `<div class="notice warn" style="margin-bottom:0"><b>หมายเหตุอาจารย์:</b> ${escapeHtml(i.Teacher_Note)}</div>` : ''}
+        </div>
+        <div>
+          ${submittedPill} ${checkPill} ${latePill}
+          ${i.Timestamp ? `<div class="muted" style="margin-top:6px">ส่งเมื่อ ${escapeHtml(i.Timestamp)} | ${escapeHtml(i.Receipt_ID)} | V${escapeHtml(i.Version)}</div>` : ''}
+        </div>
+        <div>${fileLink}</div>
+      </div>`;
+  }
+
+  function loadTeacherDashboard() {
+    const pin = byId('teacherPin').value;
+    const filters = {
+      courseId: byId('teacherCourse').value,
+      assignmentId: byId('teacherAssignment').value,
+      status: byId('teacherStatus').value
+    };
+    if (!pin) return showBox('teacherDashboard', 'กรุณาใส่ PIN', 'warn');
+    setLoader('teacherLoader', true);
+    api('teacher.dashboard', { pin, filters }).then(res => {
+      setLoader('teacherLoader', false);
+      if (!res || !res.ok) return showBox('teacherDashboard', (res && res.message) || 'โหลด Dashboard ไม่สำเร็จ', 'error');
+      try { sessionStorage.setItem('wd_pin', pin); } catch (e) {}
+      renderTeacherDashboard(res);
+    });
+  }
+
+  function renderTeacherDashboard(res) {
+    teacherDashboardHasLoaded = true;
+    updateTeacherFiltersFromDashboardResponse(res);
+    const k = res.kpi;
+    const rows = res.rows || [];
+    byId('teacherDashboard').innerHTML = `
+      <div class="kpis" style="margin-top:16px">
+        <div class="kpi"><div class="num">${k.total}</div><div class="txt">รายการทั้งหมด</div></div>
+        <div class="kpi"><div class="num">${k.submitted}</div><div class="txt">ส่งแล้ว</div></div>
+        <div class="kpi"><div class="num">${k.notSubmitted}</div><div class="txt">ยังไม่ส่ง</div></div>
+        <div class="kpi"><div class="num">${k.late}</div><div class="txt">ล่าช้า</div></div>
+        <div class="kpi"><div class="num">${k.waitCheck}</div><div class="txt">รอตรวจ</div></div>
+        <div class="kpi"><div class="num">${k.revision}</div><div class="txt">ต้องแก้ไข</div></div>
+        <div class="kpi"><div class="num">${k.checked}</div><div class="txt">ตรวจแล้ว</div></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>รหัส</th><th>ชื่อ</th><th>กลุ่ม</th><th>งาน</th><th>กำหนดส่ง</th><th>เวลาส่ง</th><th>สถานะ</th><th>หมายเหตุ</th><th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(renderTeacherRow).join('') || '<tr><td colspan="9">ไม่พบข้อมูลตามเงื่อนไข</td></tr>'}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  function renderTeacherRow(r) {
+    const action = r.Submit_ID ? `
+      <div class="small-actions">
+        ${r.File_URL ? `<a class="link-btn secondary" href="${escapeAttr(r.File_URL)}" target="_blank">ไฟล์</a>` : ''}
+        ${r.Folder_URL ? `<a class="link-btn ghost" href="${escapeAttr(r.Folder_URL)}" target="_blank">โฟลเดอร์</a>` : ''}
+        <button class="ghost" onclick="setRowStatus('${escapeAttr(r.Submit_ID)}','ตรวจแล้ว')">ตรวจแล้ว</button>
+        <button class="ghost" onclick="setRowStatus('${escapeAttr(r.Submit_ID)}','ต้องแก้ไข')">ต้องแก้ไข</button>
+        <button class="ghost" onclick="setRowStatus('${escapeAttr(r.Submit_ID)}','รอตรวจ')">รอตรวจ</button>
+      </div>` : '<span class="muted">ยังไม่มีไฟล์</span>';
+
+    return `
+      <tr>
+        <td>${escapeHtml(r.Student_ID)}</td>
+        <td><b>${escapeHtml(r.Name)}</b><div class="muted">${escapeHtml(r.Course_ID)}</div></td>
+        <td>${escapeHtml(r.Section)}</td>
+        <td>${escapeHtml(r.Assignment_Name)}<div class="muted">${escapeHtml(r.Assignment_ID)}</div></td>
+        <td>${escapeHtml(r.Due_Date || '-')}</td>
+        <td>${escapeHtml(r.Timestamp || '-')} ${r.Receipt_ID ? `<div class="muted">${escapeHtml(r.Receipt_ID)} | V${escapeHtml(r.Version)}</div>` : ''}</td>
+        <td>${statusPill(r.Check_Status)} ${r.Late_Status === 'LATE' ? '<span class="pill late">ล่าช้า</span>' : ''}</td>
+        <td>${escapeHtml(r.Teacher_Note || '')}${r.Email_Match_Status === 'NOT_MATCH' ? '<div class="pill late">อีเมลไม่ตรง</div>' : ''}</td>
+        <td>${action}</td>
+      </tr>`;
+  }
+
+  function setRowStatus(submitId, status) {
+    const pin = byId('teacherPin').value;
+    const note = prompt('หมายเหตุถึงนักศึกษา / หมายเหตุการตรวจ', '');
+    if (note === null) return;
+    setLoader('teacherLoader', true);
+    api('teacher.update', { pin, submitId, checkStatus: status, teacherNote: note }).then(res => {
+      setLoader('teacherLoader', false);
+      if (!res || !res.ok) return showGlobal((res && res.message) || 'อัปเดตไม่สำเร็จ', 'error');
+      showGlobal(res.message, 'success');
+      loadTeacherDashboard();
+    });
+  }
+
+  function exportMissingList() {
+    const pin = byId('teacherPin').value;
+    setLoader('teacherLoader', true);
+    api('teacher.export', { pin, courseId: byId('teacherCourse').value, assignmentId: byId('teacherAssignment').value, section: '' }).then(res => {
+      setLoader('teacherLoader', false);
+      if (!res || !res.ok) return showGlobal((res && res.message) || 'Export ไม่สำเร็จ', 'error');
+      showGlobal(res.message, 'success');
+    });
+  }
+
+  function renderStudentLookupError(res, boxId) {
+    let html = `<div class="notice error">${escapeHtml(res.message || 'ไม่พบข้อมูล')}</div>`;
+    if (res.suggestions && res.suggestions.length) {
+      html += '<div class="notice warn"><b>รหัสใกล้เคียงที่พบ:</b><br>' + res.suggestions.map(s => `
+        <button class="ghost" style="margin:6px 6px 0 0" onclick="useSuggestedId('${escapeAttr(s.Student_ID)}','${boxId}')">${escapeHtml(s.Student_ID)} - ${escapeHtml(s.Name)}</button>
+      `).join('') + '</div>';
+    }
+    byId(boxId).innerHTML = html;
+    if (boxId === 'submitStudentBox') byId('submitFormBox').classList.add('hidden');
+  }
+
+  function useSuggestedId(sid, boxId) {
+    if (boxId === 'submitStudentBox') {
+      byId('submitStudentId').value = sid;
+      lookupSubmitStudent();
+    } else {
+      byId('statusStudentId').value = sid;
+      checkStatus();
+    }
+  }
+
+  function statusPill(status) {
+    if (status === 'ตรวจแล้ว') return '<span class="pill checked">ตรวจแล้ว</span>';
+    if (status === 'ต้องแก้ไข') return '<span class="pill revision">ต้องแก้ไข</span>';
+    if (status === 'รอตรวจ') return '<span class="pill wait">รอตรวจ</span>';
+    if (status === 'ยังไม่ส่ง') return '<span class="pill none">ยังไม่ส่ง</span>';
+    if (status === 'ไม่รับงาน') return '<span class="pill late">ไม่รับงาน</span>';
+    return `<span class="pill none">${escapeHtml(status || '-')}</span>`;
+  }
+
+  function showGlobal(message, type) {
+    const box = byId('globalNotice');
+    if (!message) { box.innerHTML = ''; return; }
+    box.innerHTML = `<div class="notice ${type || ''}">${escapeHtml(message)}</div>`;
+    setTimeout(() => { box.innerHTML = ''; }, 6500);
+  }
+  function showBox(id, message, type) { byId(id).innerHTML = `<div class="notice ${type || ''}">${escapeHtml(message)}</div>`; }
+  function setLoader(id, show) { byId(id).classList.toggle('show', !!show); }
+  function byId(id) { return document.getElementById(id); }
+  function escapeHtml(v) { return String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+  function escapeAttr(v) { return escapeHtml(v).replace(/`/g, '&#96;'); }
+</script>
+</body>
+</html>
