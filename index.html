@@ -1,1043 +1,877 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <title>แบบทดสอบออนไลน์</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WorkDrop Class</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script>
-    /* =====================================================
-     *  ตั้งค่า: วาง URL ของ Web App (ลงท้าย /exec) ที่ได้จาก Deploy
-     *  หลายวิชา → เพิ่มบรรทัด แล้วเปิดหน้าผู้สอนด้วย ?admin&s=ชื่อย่อ
-     * ===================================================== */
-    const API_URLS = {
-      default: 'https://script.google.com/macros/s/AKfycbyXKZgPodzPPj2moGahHiDB60ffbEOAOJaYJkxE6LalHiujzYHtY5Rtfrj4CSwOfhb44w/exec',
-      // chem2: 'https://script.google.com/macros/s/xxxxxxxx/exec',
-    };
-    const FOOTER_TEXT = '© 2025 Chatratchachaya, Ch. Ph.D. · Applied Chemistry · RMUTI';
-  </script>
   <style>
     :root {
-      --bg:#edf3f0; --surface:#ffffff; --surface2:#f3f7f5; --border:#d8e3de;
-      --accent:#1f5546; --accent2:#2f6b5a; --tint:#e3eee9; --tint2:#d3e5dc;
-      --success:#2f8a5f; --warning:#c98a1b; --danger:#c2453d;
-      --text:#173a31; --muted:#6b7d76; --radius:16px;
-      --shadow:0 1px 2px rgba(23,58,49,.04);
-      --shadow-lg:0 6px 24px rgba(23,58,49,.10);
+      --bg: #eef8f8;
+      --card: #ffffff;
+      --ink: #15393b;
+      --muted: #627d7e;
+      --line: #d3e8e7;
+      --primary: #17807d;
+      --primary-dark: #11625f;
+      --primary-soft: #dcf2f0;
+      --tint2: #bfe6e2;
+      --green: #e3f3ea;   --green-ink: #2f7d52;
+      --yellow: #fdf5dc;  --yellow-ink: #8a6a12;
+      --orange: #fdeee2;  --orange-ink: #a5531f;
+      --red: #fdebea;     --red-ink: #b2403a;
+      --blue: #e6eef8;    --blue-ink: #2f5b8f;
+      --gray: #f2fafa;
+      --shadow: 0 1px 2px rgba(21,57,59,.04);
+      --radius: 16px;
     }
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    html,body{background:var(--bg);color:var(--text);font-family:'Anuphan','Inter',system-ui,sans-serif;font-size:15px;line-height:1.6}
-    .page{max-width:900px;margin:0 auto;padding:24px 16px 60px}
-    .app-header{display:flex;align-items:center;gap:14px;padding:4px 0 22px;border-bottom:1px solid var(--border);margin-bottom:28px}
-    .app-header .icon{width:44px;height:44px;border-radius:12px;background:var(--tint);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-    .app-header h1{font-size:22px;font-weight:600;line-height:1.3;color:var(--accent);letter-spacing:-.2px}
-    .course-code{display:inline-block;font-size:12px;font-weight:600;color:var(--accent);background:var(--tint);border-radius:999px;padding:2px 10px;margin-bottom:4px;font-family:'Inter','Anuphan',sans-serif;letter-spacing:.3px}
-    .app-header p{font-size:13px;color:var(--muted);margin-top:2px}
-    .card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;margin-bottom:16px;border:1px solid var(--border)}
-    .card-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px}
-    .card-title::before{content:'';width:4px;height:16px;background:var(--accent2);border-radius:2px;display:block}
-    select,input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface2);font-family:inherit;font-size:16px;color:var(--text);outline:none;transition:border-color .15s}
-    select:focus,input:focus{border-color:var(--accent2);background:#fff;box-shadow:0 0 0 3px var(--tint)}
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 22px;border:none;border-radius:10px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:600;transition:all .15s}
-    .btn-primary{background:var(--accent);color:#fff}
-    .btn-primary:hover{background:#174538}
-    .btn-primary:disabled{opacity:.5;cursor:not-allowed}
-    .btn-ghost{background:#fff;color:var(--text);border:1.5px solid var(--border)}
-    .btn-ghost:hover{background:var(--tint)}
-    .btn-danger{background:var(--danger);color:#fff}
-    .btn-success{background:var(--success);color:#fff}
-    .btn-sm{padding:6px 12px;font-size:13px}
-    .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:13px;font-weight:600;white-space:nowrap}
-    .badge-blue{background:var(--tint);color:var(--accent)}.badge-green{background:#f0fdf4;color:#15803d}
-    .badge-red{background:#fff1f2;color:#be123c}.badge-amber{background:#fffbeb;color:#b45309}.badge-gray{background:var(--surface2);color:var(--muted)}
-    .alert{padding:12px 16px;border-radius:10px;font-weight:500;font-size:14px;display:flex;align-items:center;gap:10px;margin-bottom:12px}
-    .alert-success{background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d}
-    .alert-error{background:#fff1f2;border:1px solid #fecdd3;color:#be123c}
-    .alert-warning{background:#fffbeb;border:1px solid #fde68a;color:#b45309}
-    .alert-info{background:var(--tint);border:1px solid var(--tint2);color:var(--accent)}
-    .field-label{font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:500}
-    .row2{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
-    .row2>*{flex:1;min-width:150px}
-    .muted{color:var(--muted);font-size:13px}
-    .center{text-align:center}
-
-    /* steps */
-    .steps{display:flex;margin-bottom:24px}
-    .step{flex:1;text-align:center;padding:10px 6px;font-size:13px;color:var(--muted);border-bottom:2px solid var(--border);font-weight:500}
-    .step.active{color:var(--accent);border-color:var(--accent);font-weight:700}
-    .step.done{color:var(--success);border-color:var(--success)}
-
-    /* timer */
-    .timer-block{position:sticky;top:8px;z-index:50;display:flex;align-items:center;gap:14px;padding:12px 18px;background:var(--tint);border:1.5px solid var(--tint2);border-radius:12px;margin-bottom:16px;box-shadow:var(--shadow)}
-    .timer-block.warning{background:#fffbeb;border-color:#fde68a}
-    .timer-block.danger{background:#fff1f2;border-color:#fecdd3}
-    .timer-digits{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--accent);letter-spacing:1px;font-family:'Inter',monospace;line-height:1.1}
-    .timer-digits.warning{color:var(--warning)}
-    .timer-digits.danger{color:var(--danger);animation:pulse .8s infinite}
-    .timer-label{font-size:12px;color:var(--muted)}
-    .timer-bar-wrap{height:6px;background:var(--border);border-radius:999px;overflow:hidden}
-    .timer-bar{height:100%;border-radius:999px;background:var(--accent);transition:width .5s linear}
-    .timer-bar.warning{background:var(--warning)}
-    .timer-bar.danger{background:var(--danger)}
-
-    /* questions */
-    .no-copy{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-    .q-item{border:1.5px solid var(--border);border-radius:12px;padding:18px;margin-bottom:12px}
-    .q-item.answered{border-color:var(--accent)}
-    .q-num{font-size:12px;font-weight:600;color:var(--accent);letter-spacing:.5px;margin-bottom:6px}
-    .q-text{font-weight:500;margin-bottom:12px;line-height:1.5;white-space:pre-line}
-    .q-img{max-width:100%;border-radius:8px;margin-bottom:12px}
-    .opt label{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:9px;background:var(--surface2);margin:6px 0;cursor:pointer;border:1.5px solid transparent}
-    .opt label:has(input:checked){background:var(--tint);border-color:var(--accent2)}
-    .opt input[type=radio]{accent-color:var(--accent);width:16px;height:16px;flex-shrink:0}
-    .opt-key{font-weight:700;color:var(--accent);min-width:18px}
-    .score-big{font-size:44px;font-weight:800;color:var(--accent);font-family:'Inter',sans-serif;line-height:1}
-
-    /* QR */
-    .qr-wrap{display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap}
-    .qr-box{width:200px;height:200px;flex-shrink:0;background:#fff;border-radius:12px;box-shadow:var(--shadow-lg);padding:8px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer}
-    .qr-closed{position:absolute;inset:0;background:rgba(255,255,255,.93);border-radius:12px;display:none;align-items:center;justify-content:center;text-align:center;font-weight:700;color:var(--danger);padding:10px}
-    .is-closed .qr-closed{display:flex}
-    .qr-info{flex:1;min-width:200px}
-    .qr-url{font-size:12px;word-break:break-all;color:var(--muted);margin-top:4px}
-    .qr-url a{color:var(--accent)}
-    .slot-bar-wrap{margin-top:10px;height:4px;background:var(--border);border-radius:999px;overflow:hidden}
-    .slot-bar{height:100%;background:var(--accent);transition:width .3s linear}
-    .modal-backdrop{display:none;position:fixed;inset:0;z-index:1000;background:rgba(10,15,30,.7);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:16px}
-    .modal-backdrop.open{display:flex}
-    .modal{background:var(--surface);border-radius:24px;box-shadow:0 24px 64px rgba(0,0,0,.25);padding:28px;width:min(640px,100%);max-height:100%;overflow:auto;text-align:center;position:relative}
-    .modal-qr{display:inline-flex;background:#fff;border-radius:18px;padding:14px;box-shadow:0 0 0 1px var(--border);margin:16px 0;position:relative}
-    .modal-qr img,.modal-qr canvas{width:min(62vh,80vw)!important;height:auto!important;max-width:520px}
-    .big-sec{font-size:28px;font-weight:700;color:var(--accent);font-family:'Inter',monospace}
-
-    /* dashboard */
-    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
-    .stat{background:var(--surface2);border-radius:10px;padding:10px;text-align:center}
-    .stat b{display:block;font-size:22px;font-family:'Inter',sans-serif}
-    .stat span{font-size:12px;color:var(--muted)}
-    .table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px}
-    table{width:100%;border-collapse:collapse;font-size:14px;min-width:620px}
-    th,td{padding:8px 10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:middle}
-    th{background:var(--surface2);font-size:12px;color:var(--muted);font-weight:600}
-    tr.flag td{background:#fff7ed}
-
-    /* toast */
-    #toast{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:2000;max-width:min(560px,calc(100% - 32px));width:max-content}
-    #toast .alert{box-shadow:var(--shadow-lg);font-size:15px;font-weight:600}
-    .footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px;padding-top:20px;border-top:1px solid var(--border)}
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-    @media (max-width:600px){
-      .table-wrap{border:0;overflow:visible}
-      .table-wrap table{min-width:0}
-      .table-wrap thead{display:none}
-      .table-wrap tr{display:grid;grid-template-columns:auto 1fr auto;gap:2px 10px;border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;background:#fff}
-      .table-wrap tr.flag{background:#fff7ed}
-      .table-wrap td{border:0;padding:0;background:transparent!important}
-      .table-wrap td:nth-child(1){grid-row:1/3;align-self:center;font-weight:600;color:var(--muted)}
-      .table-wrap td:nth-child(2){grid-column:2}
-      .table-wrap td:nth-child(3){grid-column:2;font-size:13px}
-      .table-wrap td:nth-child(4){grid-column:3;grid-row:1;text-align:right}
-      .table-wrap td:nth-child(5){grid-column:3;grid-row:2;text-align:right}
-      .table-wrap td:nth-child(6){grid-column:2/4;font-size:13px}
-      .table-wrap td:nth-child(6):not(:empty)::before{content:'ออกจากหน้า: ';color:var(--muted)}
-      .table-wrap td:nth-child(7){grid-column:2/4}
-      .table-wrap td:nth-child(8){grid-column:1/4;display:flex;gap:6px;flex-wrap:wrap}
-      .table-wrap td:nth-child(8):empty{display:none}
-      .table-wrap td[colspan]{grid-column:1/4}
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Anuphan', 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.6;
     }
-    @media (max-width:540px){
-      .modal{padding:18px 14px}
-      .qr-wrap{justify-content:center}
-      .modal-qr{padding:8px}
-      .modal-qr img,.modal-qr canvas{width:min(62vh,calc(100vw - 80px))!important}
-      .card{padding:18px}
-      .qr-box{width:160px;height:160px}
-      .timer-digits{font-size:22px}
-      .stats{grid-template-columns:repeat(2,1fr)}
+    .shell { width: min(1100px, calc(100% - 32px)); margin: 0 auto; padding: 24px 0 48px; }
+
+    /* ---------- header ---------- */
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 16px;
+      align-items: stretch;
+      margin-bottom: 8px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand, .quick-card, .panel, .result-card, .assignment-card, .status-row {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .brand { padding: 24px; background: transparent; border: 0; box-shadow: none; padding-left: 0; }
+    .tag { display: inline-flex; gap: 6px; align-items: center; background: var(--primary-soft); color: var(--primary); padding: 4px 12px; border-radius: 999px; font-weight: 600; font-size: 13px; }
+    h1 { margin: 12px 0 4px; font-size: clamp(28px, 4vw, 40px); line-height: 1.15; letter-spacing: -.02em; color: var(--primary); font-weight: 700; }
+    .subtitle { color: var(--muted); font-size: 16px; margin: 0; }
+    .teacher { margin-top: 14px; font-weight: 600; color: var(--ink); font-size: 15px; }
+    .quick-card { padding: 20px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; }
+    .date-pill { align-self: flex-start; background: var(--gray); border: 1px solid var(--line); color: var(--muted); padding: 4px 12px; border-radius: 999px; font-weight: 500; font-size: 13px; font-family: 'Inter', 'Anuphan', sans-serif; }
+    .big-question { font-size: 20px; font-weight: 700; line-height: 1.3; margin: 6px 0; color: var(--ink); }
+    .nav { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 0; }
+
+    /* ---------- buttons ---------- */
+    .tab-btn, button, .link-btn {
+      border: 0;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 15px;
+      border-radius: 10px;
+      padding: 10px 18px;
+      transition: background .15s, border-color .15s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+    .tab-btn { background: #fff; border: 1.5px solid var(--line); color: var(--ink); }
+    .tab-btn:hover { background: var(--primary-soft); }
+    .tab-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+    button.primary { background: var(--primary); color: #fff; }
+    button.primary:hover { background: var(--primary-dark); }
+    button.secondary, .link-btn.secondary { background: var(--primary-soft); color: var(--primary); border: 1.5px solid var(--tint2); }
+    button.secondary:hover, .link-btn.secondary:hover { background: var(--tint2); }
+    button.ghost, .link-btn.ghost { background: #fff; color: var(--ink); border: 1.5px solid var(--line); }
+    button.ghost:hover { background: var(--primary-soft); }
+    button.danger { background: var(--red); color: var(--red-ink); }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ---------- panels ---------- */
+    .panel { padding: 24px; margin-top: 16px; }
+    .panel-title { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 16px; }
+    .panel-title h2 { margin: 0; font-size: 18px; font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 8px; }
+    .panel-title h2::before { content: ''; width: 4px; height: 18px; background: var(--primary); border-radius: 2px; }
+    .panel-title .muted { font-size: 13px; margin-top: 2px; }
+    .muted { color: var(--muted); }
+    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; }
+    .col-12 { grid-column: span 12; } .col-8 { grid-column: span 8; } .col-6 { grid-column: span 6; }
+    .col-4 { grid-column: span 4; } .col-3 { grid-column: span 3; }
+    label { display: block; font-weight: 500; font-size: 13px; margin: 0 0 6px; color: var(--muted); }
+    input, select, textarea {
+      width: 100%;
+      border: 1.5px solid var(--line);
+      background: var(--gray);
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-family: inherit;
+      font-size: 16px;
+      color: var(--ink);
+      outline: none;
+      transition: border-color .15s;
+    }
+    textarea { min-height: 86px; resize: vertical; }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px var(--primary-soft); }
+    input[type=file] { background: #fff; padding: 10px; }
+    .student-card, .receipt-card {
+      border: 1px solid var(--line);
+      background: var(--gray);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 14px 0;
+    }
+    .student-name { font-size: 18px; font-weight: 700; color: var(--ink); margin: 0 0 2px; }
+    .assignments-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 4px; }
+    .assignment-card { padding: 16px 18px; }
+    .assignment-card h3 { margin: 8px 0 4px; font-size: 16px; font-weight: 600; }
+
+    /* ---------- pills / notices ---------- */
+    .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-weight: 600; font-size: 12.5px; white-space: nowrap; }
+    .pill.open, .pill.ok { background: var(--green); color: var(--green-ink); }
+    .pill.wait { background: var(--yellow); color: var(--yellow-ink); }
+    .pill.checked { background: var(--blue); color: var(--blue-ink); }
+    .pill.revision { background: var(--orange); color: var(--orange-ink); }
+    .pill.late { background: var(--red); color: var(--red-ink); }
+    .pill.none { background: var(--gray); color: var(--muted); border: 1px solid var(--line); }
+    .notice { padding: 12px 16px; border-radius: 10px; border: 1px solid var(--line); background: #fff; margin: 12px 0; font-size: 14px; font-weight: 500; }
+    .notice.error { background: var(--red); color: var(--red-ink); border-color: #f3c9c5; }
+    .notice.success { background: var(--green); color: var(--green-ink); border-color: #bfe2cd; }
+    .notice.warn { background: var(--yellow); color: var(--yellow-ink); border-color: #efdfa8; }
+    .status-row { box-shadow: none; padding: 14px 16px; display: grid; grid-template-columns: 1.2fr .8fr auto; gap: 12px; align-items: center; margin-bottom: 10px; }
+    .status-row h3 { margin: 0 0 2px; font-size: 16px; font-weight: 600; }
+
+    /* ---------- KPIs / table ---------- */
+    .kpis { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; margin: 14px 0; }
+    .kpi { background: var(--gray); border-radius: 10px; padding: 12px; text-align: center; }
+    .kpi .num { font-size: 24px; font-weight: 700; color: var(--primary); line-height: 1.1; font-family: 'Inter', 'Anuphan', sans-serif; }
+    .kpi .txt { color: var(--muted); margin-top: 4px; font-size: 12px; }
+    .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+    table { border-collapse: collapse; width: 100%; min-width: 1040px; }
+    th, td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; font-size: 14px; }
+    th { background: var(--gray); color: var(--muted); font-weight: 600; font-size: 12.5px; position: sticky; top: 0; z-index: 1; }
+    tr:hover td { background: #f6fcfc; }
+    .small-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .small-actions button, .small-actions a { padding: 5px 10px; font-size: 13px; }
+    .loader { display: none; align-items: center; gap: 8px; color: var(--primary); font-weight: 600; font-size: 14px; }
+    .loader.show { display: flex; }
+    .spinner { width: 16px; height: 16px; border-radius: 50%; border: 3px solid var(--tint2); border-top-color: var(--primary); animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hidden { display: none !important; }
+    #clientDebugBox { display: none !important; }
+    footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+    @media (max-width: 850px) {
+      .hero { grid-template-columns: 1fr; }
+      .brand { padding: 0; }
+      .grid { grid-template-columns: 1fr; }
+      .col-12, .col-8, .col-6, .col-4, .col-3 { grid-column: span 1; }
+      .assignments-list { grid-template-columns: 1fr; }
+      .status-row { grid-template-columns: 1fr; }
+      .kpis { grid-template-columns: repeat(2, 1fr); }
+      .panel { padding: 18px; }
+      .nav .tab-btn { flex: 1; padding: 10px 8px; font-size: 14px; }
+      /* ตารางอาจารย์ → การ์ดบนมือถือ */
+      #teacherDashboard .table-wrap { border: 0; background: transparent; overflow: visible; }
+      #teacherDashboard table { min-width: 0; }
+      #teacherDashboard thead { display: none; }
+      #teacherDashboard tr { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; }
+      #teacherDashboard td { border: 0; padding: 0; font-size: 13.5px; background: transparent !important; }
+      #teacherDashboard td:nth-child(2) { grid-column: 1; grid-row: 1; font-size: 15px; }
+      #teacherDashboard td:nth-child(7) { grid-column: 2; grid-row: 1; text-align: right; }
+      #teacherDashboard td:nth-child(1) { grid-column: 1; grid-row: 2; color: var(--muted); }
+      #teacherDashboard td:nth-child(3) { grid-column: 2; grid-row: 2; color: var(--muted); text-align: right; }
+      #teacherDashboard td:nth-child(4) { grid-column: 1 / 3; margin-top: 6px; }
+      #teacherDashboard td:nth-child(5), #teacherDashboard td:nth-child(6) { grid-column: 1 / 3; color: var(--muted); }
+      #teacherDashboard td:nth-child(5)::before { content: 'กำหนดส่ง: '; }
+      #teacherDashboard td:nth-child(6)::before { content: 'ส่งเมื่อ: '; }
+      #teacherDashboard td:nth-child(8) { grid-column: 1 / 3; }
+      #teacherDashboard td:nth-child(8):empty { display: none; }
+      #teacherDashboard td:nth-child(9) { grid-column: 1 / 3; margin-top: 8px; }
+      #teacherDashboard td[colspan] { grid-column: 1 / 3; }
     }
   </style>
 </head>
 <body>
-<div class="page">
-  <div class="app-header">
-    <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="m9 13 2 2 4-4"/></svg></div>
-    <div>
-      <div id="hCode" class="course-code" style="display:none"></div>
-      <h1 id="hTitle">แบบทดสอบออนไลน์</h1>
-      <p id="hSub"></p>
-    </div>
-  </div>
-  <div id="app"></div>
-  <div class="footer" id="footer"></div>
-</div>
-<div id="toast"></div>
-<div class="modal-backdrop" id="confirmModal">
-  <div class="modal" style="width:min(420px,100%)">
-    <div id="confirmText" style="font-weight:600;margin-bottom:18px"></div>
-    <div style="display:flex;gap:10px">
-      <button class="btn btn-ghost" id="confirmNo" style="flex:1">ยกเลิก</button>
-      <button class="btn btn-primary" id="confirmYes" style="flex:1">ยืนยัน</button>
-    </div>
-  </div>
-</div>
-
-<script>
-/* ===================== พื้นฐาน ===================== */
-const P = new URLSearchParams(location.search);
-const SUBJECT = P.get('s') || 'default';
-const API_URL = API_URLS[SUBJECT] || API_URLS.default;
-const root = document.getElementById('app');
-document.getElementById('footer').textContent = FOOTER_TEXT;
-
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const $ = id => document.getElementById(id);
-
-function makeStore(area) {
-  const k = key => `quiz:${SUBJECT}:${key}`;
-  return {
-    get(key) { try { return JSON.parse(area().getItem(k(key))); } catch (e) { return null; } },
-    set(key, v) { try { area().setItem(k(key), JSON.stringify(v)); } catch (e) {} },
-    del(key) { try { area().removeItem(k(key)); } catch (e) {} },
-  };
-}
-const store = makeStore(() => localStorage);
-const sstore = makeStore(() => sessionStorage);
-
-let _memDevice = null;
-function deviceId() {
-  let d = null;
-  try { d = localStorage.getItem('quiz:device'); } catch (e) {}
-  if (!d) d = _memDevice;
-  if (!d) {
-    d = (window.crypto && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(16) + Math.random().toString(16).slice(2)).replace(/-/g, '');
-    try { localStorage.setItem('quiz:device', d); } catch (e) {}
-    _memDevice = d;
-  }
-  return d;
-}
-
-// เรียก API (POST แบบ text/plain → ไม่มี CORS preflight) + ลองใหม่อัตโนมัติเมื่อเน็ตหลุด/ระบบยุ่ง
-async function api(action, data = {}, retries = 3) {
-  for (let i = 0; ; i++) {
-    let text = '';
-    try {
-      const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(Object.assign({ action }, data)) });
-      text = await res.text();
-    } catch (e) {
-      if (!navigator.onLine) return { ok: false, network: true, message: 'ไม่มีอินเทอร์เน็ต กรุณาตรวจสอบการเชื่อมต่อ' };
-      if (i >= retries) return { ok: false, network: true, message: 'เรียก Apps Script ไม่สำเร็จ — ตรวจว่า Deploy แบบ Who has access: Anyone และ URL ใน API_URLS ลงท้าย /exec' };
-      await sleep(800 * 2 ** i + Math.random() * 500);
-      continue;
-    }
-    let j;
-    try { j = JSON.parse(text); } catch (e) {
-      const hint = /doPost/i.test(text) ? 'Apps Script ยังเป็นโค้ดเก่า (ไม่มี doPost) — วาง Code.gs ใหม่ แล้ว Deploy เป็น New version'
-        : /sign ?in|accounts\.google|ลงชื่อเข้าใช้/i.test(text) ? 'Apps Script ต้องล็อกอิน — ตั้ง Who has access เป็น Anyone'
-        : 'Apps Script ตอบกลับไม่ใช่ข้อมูลของระบบ — ตรวจว่า Deploy โค้ดใหม่แล้ว';
-      return { ok: false, network: true, message: hint };
-    }
-    if (j && j.busy && i < retries) { await sleep(1000 * 2 ** i + Math.random() * 1000); continue; }
-    return j;
-  }
-}
-
-function setHeader(title, sub, code) {
-  if (title) { $('hTitle').textContent = title; document.title = (code ? code + ' ' : '') + title; }
-  if (sub !== undefined) $('hSub').textContent = sub || '';
-  if (code !== undefined) { $('hCode').textContent = code ? 'รหัสวิชา ' + code : ''; $('hCode').style.display = code ? '' : 'none'; }
-}
-
-let toastTimer = null;
-function toast(msg, kind = 'info', ms = 6000) {
-  $('toast').innerHTML = `<div class="alert alert-${kind}">${esc(msg)}</div>`;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => ($('toast').innerHTML = ''), ms);
-}
-
-function confirmBox(text, yesLabel = 'ยืนยัน') {
-  return new Promise(resolve => {
-    $('confirmText').textContent = text;
-    $('confirmYes').textContent = yesLabel;
-    $('confirmModal').classList.add('open');
-    const done = v => { $('confirmModal').classList.remove('open'); resolve(v); };
-    $('confirmYes').onclick = () => done(true);
-    $('confirmNo').onclick = () => done(false);
-  });
-}
-
-function renderMessage(msg, kind = 'warning', extraHtml = '') {
-  root.innerHTML = `<div class="card"><div class="alert alert-${kind}">${esc(msg)}</div>${extraHtml}</div>`;
-}
-
-function renderLoading(msg) {
-  root.innerHTML = `<div class="card center muted">⏳ ${esc(msg || 'กำลังโหลด…')}</div>`;
-}
-
-/* ===================== BOOT ===================== */
-async function boot() {
-  if (!API_URL || API_URL.includes('วาง_DEPLOYMENT_ID')) {
-    return renderMessage('ยังไม่ได้ตั้งค่า API_URLS ในไฟล์ index.html (วาง URL ของ Web App ที่ลงท้ายด้วย /exec)', 'error');
-  }
-  if (P.has('admin')) return adminBoot();
-  if (P.has('scores')) return scoresPage();
-
-  const t = P.get('t');
-  if (t) history.replaceState(null, '', location.pathname + (SUBJECT !== 'default' ? '?s=' + encodeURIComponent(SUBJECT) : ''));
-
-  const active = store.get('active');
-  if (active && active.sessionId) return studentResume(active.sessionId, t);
-  if (t) return studentCheckin(t);
-
-  const tk = sstore.get('ticket');
-  if (tk && tk.exp > Date.now()) { setHeader(tk.title, tk.subtitle, tk.courseCode); return renderPick(tk); }
-
-  api('info', {}, 1).then(r => r && r.ok && setHeader(r.title, r.subtitle, r.courseCode));
-  renderMessage('กรุณาสแกน QR Code จากหน้าจอผู้สอนเพื่อเข้าทำแบบทดสอบ', 'info',
-    `<a class="btn btn-ghost" href="${scoresUrl()}" style="width:100%;text-decoration:none">📊 ดูคะแนนของฉัน</a>`);
-}
-
-/* ===================== STUDENT ===================== */
-function getPosition() {
-  return new Promise(resolve => {
-    if (!navigator.geolocation) return resolve(null);
-    navigator.geolocation.getCurrentPosition(
-      p => resolve({ lat: p.coords.latitude, lng: p.coords.longitude, acc: Math.round(p.coords.accuracy || 0) }),
-      () => resolve(null),
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
-    );
-  });
-}
-
-async function studentCheckin(t) {
-  renderLoading('กำลังตรวจสอบ QR…');
-  let res = await api('checkin', { t, deviceId: deviceId() });
-  if (res.needGeo) {
-    renderLoading('กำลังตรวจตำแหน่ง… ถ้ามีหน้าต่างถาม กรุณากด "อนุญาต" (Allow)');
-    const pos = await getPosition();
-    res = await api('checkin', Object.assign({ pre: res.pre, deviceId: deviceId() }, pos || { lat: null, lng: null }));
-  }
-  if (!res.ok) {
-    return renderMessage(res.message || 'ตรวจสอบ QR ไม่สำเร็จ', res.closed ? 'error' : 'warning');
-  }
-  const tk = {
-    ticket: res.ticket,
-    exp: Date.now() + (res.ticketSeconds - 30) * 1000,
-    chapter: res.chapter,
-    departments: res.departments,
-    title: res.title, subtitle: res.subtitle, courseCode: res.courseCode,
-  };
-  sstore.set('ticket', tk);
-  setHeader(res.title, res.subtitle, res.courseCode);
-  renderPick(tk);
-}
-
-function renderPick(tk) {
-  if (!(tk.departments || []).length) {
-    return renderMessage(`ยังไม่มีกลุ่มเรียนที่กำหนดให้สอบบทที่ ${tk.chapter} กรุณาแจ้งผู้สอน (ตรวจคอลัมน์ Chapters ในชีต Departments)`, 'warning');
-  }
-  root.innerHTML = `
-    <div class="steps">
-      <div class="step active" id="stp1">1 · เลือกสาขา</div>
-      <div class="step" id="stp2">2 · เลือกชื่อ</div>
-      <div class="step" id="stp3">3 · ทำแบบทดสอบ</div>
-    </div>
-    <div class="card">
-      <div class="card-title">แบบทดสอบบทที่ ${esc(tk.chapter)}</div>
-      <div id="pickMsg"></div>
-      <div class="field-label">สาขา / กลุ่มเรียน</div>
-      <select id="deptSel">
-        <option value="">— เลือกสาขา —</option>
-        ${(tk.departments || []).map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('')}
-      </select>
-      <div id="stuWrap" style="display:none;margin-top:16px">
-        <div class="field-label">ชื่อนักศึกษา</div>
-        <select id="stuSel"><option value="">— เลือกชื่อ —</option></select>
-        <div class="muted" id="sidHint" style="margin-top:6px"></div>
-        <button class="btn btn-primary" id="btnStart" style="width:100%;margin-top:16px" disabled>เริ่มทำแบบทดสอบ →</button>
-        <div class="muted center" style="margin-top:8px">เมื่อกดเริ่ม เวลาจะเริ่มนับทันที และใช้ได้เฉพาะเครื่องนี้</div>
+  <div class="shell">
+    <section class="hero">
+      <div class="brand">
+        <span class="tag">📥 WorkDrop Class</span>
+        <h1 id="systemName">WorkDrop Class</h1>
+        <p class="subtitle" id="subtitle">ระบบรับงานออนไลน์และตรวจสอบสถานะการส่งงาน</p>
+        <div class="teacher" id="teacherName">ผศ.ดร.ฉัตรชัชชญาน์ โชติชญาณ์พงศ์</div>
       </div>
-    </div>`;
-
-  let students = [];
-  const msg = (text, kind = 'warning') => ($('pickMsg').innerHTML = text ? `<div class="alert alert-${kind}">${esc(text)}</div>` : '');
-
-  $('deptSel').onchange = async e => {
-    const dept = e.target.value;
-    $('stuWrap').style.display = 'none';
-    msg('');
-    if (!dept) return;
-    $('stp1').className = 'step done'; $('stp2').className = 'step active';
-    const res = await api('students', { ticket: tk.ticket, deviceId: deviceId(), department: dept });
-    if (!res.ok) { if (res.expired) sstore.del('ticket'); return msg(res.message); }
-    students = res.students;
-    $('stuSel').innerHTML = `<option value="">— เลือกชื่อ —</option>` +
-      students.map((s, i) => `<option value="${i}">${esc(s.name)}</option>`).join('');
-    $('sidHint').textContent = '';
-    $('btnStart').disabled = true;
-    $('stuWrap').style.display = '';
-  };
-
-  $('stuSel').onchange = e => {
-    const s = students[e.target.value];
-    $('sidHint').textContent = s ? `รหัสนักศึกษา: ${s.id}` : '';
-    $('btnStart').disabled = !s;
-  };
-
-  $('btnStart').onclick = async () => {
-    const s = students[$('stuSel').value];
-    if (!s) return;
-    const ok = await confirmBox(`ยืนยันว่าคุณคือ ${s.name} (${s.id}) ?`, 'ใช่ เริ่มทำ');
-    if (!ok) return;
-    $('btnStart').disabled = true;
-    $('btnStart').textContent = 'กำลังเริ่ม…';
-    unlockAudio();
-    const res = await api('start', { ticket: tk.ticket, deviceId: deviceId(), department: $('deptSel').value, studentId: s.id }, 5);
-    if (!res.ok) {
-      $('btnStart').disabled = false;
-      $('btnStart').textContent = 'เริ่มทำแบบทดสอบ →';
-      if (res.expired) sstore.del('ticket');
-      return msg(res.message, res.blocked ? 'error' : 'warning');
-    }
-    sstore.del('ticket');
-    beginQuiz(res);
-  };
-}
-
-async function studentResume(sessionId, tokenIfAny) {
-  renderLoading('กำลังโหลดแบบทดสอบที่ทำค้างไว้…');
-  const res = await api('resume', { sessionId, deviceId: deviceId() }, 4);
-  if (res.ok) return beginQuiz(res);
-  if (res.network) {
-    return renderMessage(res.message, 'error', `<button class="btn btn-primary" onclick="location.reload()">ลองใหม่</button>`);
-  }
-  clearSession(sessionId);
-  if (res.submitted) return renderResult(res, { already: true });
-  if (tokenIfAny) return studentCheckin(tokenIfAny);
-  renderMessage(res.message || 'ไม่พบรอบสอบ', 'warning');
-}
-
-function clearSession(sid) {
-  store.del('active'); store.del('ans:' + sid); store.del('tabs:' + sid);
-}
-
-/* ----- ทำข้อสอบ ----- */
-const Q = { s: null, answers: {}, tabs: 0, offset: 0, timer: null, submitting: false, done: false, warned: {} };
-
-function beginQuiz(s) {
-  Q.s = s;
-  Q.answers = store.get('ans:' + s.sessionId) || {};
-  Q.tabs = store.get('tabs:' + s.sessionId) || 0;
-  Q.offset = s.serverNow - Date.now();
-  Q.submitting = false; Q.done = false; Q.warned = {};
-  store.set('active', { sessionId: s.sessionId });
-  setHeader(s.title, s.subtitle, s.courseCode);
-
-  const keysLabel = ['A', 'B', 'C', 'D', 'E'];
-  root.innerHTML = `
-    <div class="timer-block" id="timerBlock">
-      <div>
-        <div class="timer-digits" id="timerDigits">--:--</div>
-        <div class="timer-label">เวลาที่เหลือ</div>
-      </div>
-      <div style="flex:1">
-        <div class="timer-bar-wrap"><div class="timer-bar" id="timerBar" style="width:100%"></div></div>
-        <div class="timer-label" id="progressLbl" style="margin-top:4px"></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">แบบทดสอบบทที่ ${esc(s.chapter)}</div>
-      <div class="muted" style="margin-bottom:14px">👤 ${esc(s.studentName)} · ${esc(s.studentId)} · ${esc(s.department)}</div>
-      <div id="tabWarn"></div>
-      <div id="qList" class="no-copy">
-        ${s.questions.map((q, i) => `
-          <div class="q-item" id="qi${i}">
-            <div class="q-num">ข้อที่ ${i + 1}</div>
-            <div class="q-text">${esc(q.q)}</div>
-            ${q.img ? `<img class="q-img" src="${esc(q.img)}" alt="">` : ''}
-            ${q.opts.map((o, j) => `
-              <div class="opt"><label>
-                <input type="radio" name="q_${esc(q.no)}" value="${esc(o.k)}" data-i="${i}" ${Q.answers[q.no] === o.k ? 'checked' : ''}>
-                <span class="opt-key">${keysLabel[j]}</span><span>${esc(o.t)}</span>
-              </label></div>`).join('')}
-          </div>`).join('')}
-      </div>
-      <div id="submitMsg"></div>
-      <button class="btn btn-primary" id="btnSubmit" style="width:100%;padding:14px">✓ ส่งคำตอบ</button>
-    </div>`;
-
-  $('qList').addEventListener('contextmenu', e => e.preventDefault());
-  $('qList').addEventListener('change', e => {
-    const el = e.target;
-    if (el.type !== 'radio' || Q.done) return;
-    Q.answers[el.name.slice(2)] = el.value;
-    store.set('ans:' + s.sessionId, Q.answers);
-    updateProgress();
-  });
-  $('btnSubmit').onclick = async () => {
-    const left = s.questions.filter(q => !Q.answers[q.no]).length;
-    const ok = await confirmBox(left ? `ยังไม่ได้ตอบ ${left} ข้อ ต้องการส่งเลยหรือไม่?` : 'ยืนยันส่งคำตอบ? ส่งแล้วแก้ไขไม่ได้', 'ส่งคำตอบ');
-    if (ok) submitQuiz(false);
-  };
-
-  updateProgress();
-  renderTabWarn();
-  clearInterval(Q.timer);
-  Q.timer = setInterval(tick, 500);
-  tick();
-}
-
-function updateProgress() {
-  const qs = Q.s.questions;
-  const n = qs.filter(q => Q.answers[q.no]).length;
-  $('progressLbl').textContent = `ตอบแล้ว ${n}/${qs.length} ข้อ`;
-  qs.forEach((q, i) => $('qi' + i).classList.toggle('answered', !!Q.answers[q.no]));
-}
-
-function remainingSec() {
-  return Math.max(0, Math.ceil((Q.s.deadline - (Date.now() + Q.offset)) / 1000));
-}
-
-function tick() {
-  if (!Q.s || Q.done) return;
-  const total = Q.s.durationSec || 1;
-  const remain = remainingSec();
-  const m = Math.floor(remain / 60), sec = remain % 60;
-  const lvl = remain <= 60 ? 'danger' : remain <= 300 ? 'warning' : '';
-  const d = $('timerDigits');
-  if (!d) return;
-  d.textContent = `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
-  d.className = 'timer-digits ' + lvl;
-  $('timerBar').className = 'timer-bar ' + lvl;
-  $('timerBar').style.width = (remain / total * 100) + '%';
-  $('timerBlock').className = 'timer-block ' + lvl;
-
-  if (remain <= 300 && remain > 60 && total > 360 && !Q.warned[300]) {
-    Q.warned[300] = true; alertUser('⏰ เหลือเวลา 5 นาที', 'warning');
-  }
-  if (remain <= 60 && remain > 0 && !Q.warned[60]) {
-    Q.warned[60] = true; alertUser('⏰ เหลือเวลา 1 นาที! ระบบจะส่งคำตอบอัตโนมัติเมื่อหมดเวลา', 'error');
-  }
-  if (remain <= 0) submitQuiz(true);
-}
-
-let audioCtx = null;
-function unlockAudio() {
-  try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); audioCtx.resume(); } catch (e) {}
-}
-function beep() {
-  try {
-    if (!audioCtx) return;
-    [0, 0.35].forEach(t => {
-      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-      o.frequency.value = 880; o.connect(g); g.connect(audioCtx.destination);
-      g.gain.setValueAtTime(0.25, audioCtx.currentTime + t);
-      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + t + 0.3);
-      o.start(audioCtx.currentTime + t); o.stop(audioCtx.currentTime + t + 0.3);
-    });
-  } catch (e) {}
-}
-function alertUser(msg, kind) {
-  toast(msg, kind, 8000);
-  beep();
-  try { navigator.vibrate && navigator.vibrate([200, 100, 200]); } catch (e) {}
-}
-
-/* ----- ตรวจจับการออกจากหน้าข้อสอบ ----- */
-let unloading = false;
-window.addEventListener('beforeunload', () => (unloading = true));   // กดรีเฟรชไม่นับเป็นการออกจากหน้า
-document.addEventListener('visibilitychange', () => {
-  if (!Q.s || Q.done || Q.submitting || unloading) return;
-  if (document.hidden) {
-    Q.tabs++;
-    store.set('tabs:' + Q.s.sessionId, Q.tabs);
-    api('log', { sessionId: Q.s.sessionId, deviceId: deviceId(), count: Q.tabs }, 1);
-  } else {
-    renderTabWarn();
-    toast(`ระบบบันทึกแล้วว่าคุณออกจากหน้าข้อสอบ (${Q.tabs} ครั้ง) ผู้สอนจะเห็นข้อมูลนี้`, 'warning');
-    tick();
-  }
-});
-
-function renderTabWarn() {
-  const el = $('tabWarn');
-  if (el) el.innerHTML = Q.tabs ? `<div class="alert alert-warning">⚠️ ออกจากหน้าข้อสอบแล้ว ${Q.tabs} ครั้ง (ผู้สอนเห็นข้อมูลนี้)</div>` : '';
-}
-
-/* ----- ส่งคำตอบ ----- */
-async function submitQuiz(isAuto) {
-  if (Q.submitting || Q.done) return;
-  Q.submitting = true;
-  clearInterval(Q.timer);
-  document.querySelectorAll('#qList input').forEach(r => (r.disabled = true));
-  const btn = $('btnSubmit');
-  btn.disabled = true;
-  btn.textContent = isAuto ? '⏰ หมดเวลา — กำลังส่งอัตโนมัติ…' : 'กำลังส่ง…';
-  $('submitMsg').innerHTML = '';
-  if (isAuto) alertUser('⏰ หมดเวลา ระบบกำลังส่งคำตอบให้อัตโนมัติ', 'error');
-
-  const s = Q.s;
-  const res = await api('submit', {
-    sessionId: s.sessionId, deviceId: deviceId(), answers: Q.answers, auto: isAuto, tabSwitches: Q.tabs,
-  }, 6);
-
-  if (res.ok) {
-    Q.done = true;
-    clearSession(s.sessionId);
-    return renderResult(res, { auto: isAuto });
-  }
-  Q.submitting = false;
-  if (res.blocked) { Q.done = true; clearSession(s.sessionId); return renderMessage(res.message, 'error'); }
-  // เน็ตหลุด / ระบบยุ่ง: คำตอบยังเก็บในเครื่อง ให้กดส่งซ้ำได้
-  $('submitMsg').innerHTML = `<div class="alert alert-error">❌ ${esc(res.message || 'ส่งไม่สำเร็จ')} — คำตอบของคุณยังอยู่ในเครื่อง กดส่งอีกครั้งได้</div>`;
-  btn.disabled = false;
-  btn.textContent = '↻ ส่งอีกครั้ง';
-  btn.onclick = () => submitQuiz(isAuto);
-}
-
-function renderResult(res, opt = {}) {
-  $('toast').innerHTML = '';
-  const pct = Number(res.percent) || 0;
-  const cls = pct >= 80 ? 'badge-green' : pct >= 50 ? 'badge-amber' : 'badge-red';
-  const notes = [];
-  if (opt.already || res.duplicate) notes.push('คุณส่งแบบทดสอบบทนี้ไปแล้ว');
-  if (opt.auto || res.auto) notes.push('ส่งอัตโนมัติเมื่อหมดเวลา');
-  if (res.lateSec) notes.push(`ส่งช้ากว่ากำหนด ${res.lateSec} วินาที (ผู้สอนจะพิจารณา)`);
-  root.innerHTML = `
-    <div class="card center">
-      <div class="card-title" style="justify-content:center">ผลการทดสอบ</div>
-      <div class="score-big">${esc(res.score)}<span style="font-size:22px;color:var(--muted)">/${esc(res.total)}</span></div>
-      <div style="margin:12px 0"><span class="badge ${cls}" style="font-size:16px">${esc(pct)}%</span></div>
-      <div class="alert alert-success" style="justify-content:center">✅ บันทึกผลเรียบร้อยแล้ว</div>
-      ${notes.map(n => `<div class="muted">${esc(n)}</div>`).join('')}
-      ${res.viewCode ? `
-        <hr style="border:none;border-top:1px solid var(--border);margin:18px 0">
-        <div class="muted">รหัสดูคะแนนของคุณ (ใช้ได้ทุกบท ควรจดหรือแคปเก็บไว้)</div>
-        <div style="font-family:'Inter',monospace;font-size:26px;font-weight:700;letter-spacing:4px;color:var(--accent);margin:4px 0 14px">${esc(res.viewCode)}</div>
-        <a class="btn btn-primary" href="${scoresUrl()}" style="width:100%;text-decoration:none">📊 ดูคะแนนทุกบทและคะแนนรวม</a>` : ''}
-    </div>`;
-  if (res.viewCode && res.studentId) store.set('me', { id: res.studentId, code: res.viewCode });
-}
-
-/* ===================== ดูคะแนนของฉัน ===================== */
-function scoresUrl() {
-  return location.pathname + '?scores' + (SUBJECT !== 'default' ? '&s=' + encodeURIComponent(SUBJECT) : '');
-}
-
-async function scoresPage(err) {
-  api('info', {}, 1).then(r => r && r.ok && setHeader(r.title, r.subtitle, r.courseCode));
-  const me = store.get('me');
-  if (me && me.id && me.code && !err) return loadScores(me.id, me.code);
-  root.innerHTML = `
-    <div class="card" style="max-width:420px;margin:0 auto">
-      <div class="card-title">ดูคะแนนของฉัน</div>
-      ${err ? `<div class="alert alert-error">${esc(err)}</div>` : ''}
-      <div class="field-label">รหัสนักศึกษา</div>
-      <input id="scId" autocomplete="off" placeholder="เช่น 69172110571-4" value="${esc((me && me.id) || '')}">
-      <div class="field-label" style="margin-top:12px">รหัสดูคะแนน (6 ตัว ได้หลังส่งแบบทดสอบ)</div>
-      <input id="scCode" autocomplete="off" maxlength="6" style="text-transform:uppercase;letter-spacing:4px;font-family:'Inter',monospace">
-      <button class="btn btn-primary" id="btnSc" style="width:100%;margin-top:16px">ดูคะแนน</button>
-      <div class="muted" style="margin-top:10px">ลืมรหัสดูคะแนน? ขอได้จากผู้สอน</div>
-    </div>`;
-  const go = () => {
-    const id = $('scId').value.trim(), code = $('scCode').value.trim().toUpperCase();
-    if (id && code) loadScores(id, code);
-  };
-  $('btnSc').onclick = go;
-  $('scCode').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
-}
-
-async function loadScores(id, code) {
-  renderLoading('กำลังโหลดคะแนน…');
-  const res = await api('scores', { studentId: id, code });
-  if (!res.ok) { store.del('me'); return scoresPage(res.message); }
-  store.set('me', { id, code });
-  setHeader(res.title, res.subtitle, res.courseCode);
-  const sm = res.summary;
-  const pctCls = p => (p >= 80 ? 'badge-green' : p >= 50 ? 'badge-amber' : 'badge-red');
-  root.innerHTML = `
-    <div class="card">
-      <div class="card-title">คะแนนของฉัน</div>
-      <div style="font-weight:600">${esc(res.name)}</div>
-      <div class="muted">${esc(res.studentId)} · ${esc(res.department)}</div>
-      <div class="stats" style="margin-top:16px;grid-template-columns:repeat(3,1fr)">
-        <div class="stat"><b style="color:var(--accent)">${sm.score}<span style="font-size:14px;color:var(--muted)">/${sm.full}</span></b><span>คะแนนรวม</span></div>
-        <div class="stat"><b>${sm.avgPercent}%</b><span>เฉลี่ยบทที่สอบแล้ว</span></div>
-        <div class="stat"><b>${sm.doneCount}<span style="font-size:14px;color:var(--muted)">/${sm.chapterCount}</span></b><span>บทที่สอบแล้ว</span></div>
-      </div>
-      <div class="muted" style="margin-bottom:12px">คะแนนรวมคิดจากทุกบท บทที่ยังไม่ได้สอบนับเป็น 0</div>
-      <div class="table-wrap"><table style="min-width:0">
-        <thead><tr><th>บทที่</th><th>คะแนน</th><th>%</th><th>วันที่ส่ง</th></tr></thead>
-        <tbody>${res.items.map(i => i.done ? `
-          <tr><td>${i.ch}</td><td><b>${i.score}</b>/${i.total}</td>
-            <td><span class="badge ${pctCls(i.percent)}">${i.percent}%</span></td>
-            <td class="muted">${esc(i.date)}${i.auto ? '<br>ส่งอัตโนมัติ' : ''}${i.lateSec ? '<br>ส่งช้า' : ''}</td></tr>` : `
-          <tr><td>${i.ch}</td><td class="muted">—/${i.full}</td><td></td><td class="muted">ยังไม่ได้สอบ</td></tr>`).join('')}
-        </tbody>
-      </table></div>
-      <button class="btn btn-ghost" id="btnOut" style="width:100%;margin-top:16px">ออก (ให้คนอื่นใช้เครื่องนี้ดูคะแนน)</button>
-    </div>`;
-  $('btnOut').onclick = () => { store.del('me'); scoresPage(); };
-}
-
-/* ===================== ADMIN ===================== */
-const A = { pin: null, st: null, qrTimer: null, slotTimer: null, pollTimer: null, rows: [], dept: '' };
-
-async function adminBoot() {
-  setHeader('แผงควบคุมผู้สอน', '');
-  const pin = sstore.get('pin');
-  if (pin) {
-    renderLoading('กำลังเข้าสู่ระบบ…');
-    const res = await api('admin.login', { pin });
-    if (res.ok) { A.pin = pin; return renderAdmin(res); }
-    sstore.del('pin');
-  }
-  renderPin();
-}
-
-function renderPin(err) {
-  root.innerHTML = `
-    <div class="card" style="max-width:380px;margin:0 auto">
-      <div class="card-title">เข้าสู่ระบบผู้สอน</div>
-      ${err ? `<div class="alert alert-error">${esc(err)}</div>` : ''}
-      <div class="field-label">PIN</div>
-      <div style="display:flex;gap:8px">
-        <input id="pinIn" type="text" inputmode="numeric" autocomplete="off" placeholder="พิมพ์ PIN ที่ตั้งไว้ใน setup()" style="font-size:20px;letter-spacing:4px;font-family:'Inter',monospace">
-        <button class="btn btn-ghost" id="btnEye" type="button" style="flex-shrink:0" title="ซ่อน/แสดง">🙈</button>
-      </div>
-      <button class="btn btn-primary" id="btnPin" style="width:100%;margin-top:14px">เข้าสู่ระบบ</button>
-    </div>`;
-  const go = async () => {
-    const pin = $('pinIn').value.trim();
-    if (!pin) return;
-    $('btnPin').disabled = true;
-    const res = await api('admin.login', { pin });
-    if (!res.ok) return renderPin(res.message);
-    A.pin = pin; sstore.set('pin', pin);
-    renderAdmin(res);
-  };
-  $('btnEye').onclick = () => {
-    const i = $('pinIn'), hide = i.type === 'text';
-    i.type = hide ? 'password' : 'text';
-    $('btnEye').textContent = hide ? '👁' : '🙈';
-  };
-  $('btnPin').onclick = go;
-  $('pinIn').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
-  $('pinIn').focus();
-}
-
-function studentBaseUrl() {
-  return location.origin + location.pathname + '?' + (SUBJECT !== 'default' ? 's=' + encodeURIComponent(SUBJECT) + '&' : '');
-}
-
-function renderAdmin(st) {
-  A.st = st;
-  setHeader(st.title, (st.subtitle ? st.subtitle + ' · ' : '') + 'แผงควบคุมผู้สอน', st.courseCode);
-  root.innerHTML = `
-    <div class="card">
-      <div class="card-title">ตั้งค่ารอบสอบ</div>
-      <div class="row2">
+      <div class="quick-card">
+        <div class="date-pill" id="serverTime">กำลังโหลดเวลา...</div>
         <div>
-          <div class="field-label">บทที่เปิดสอบ</div>
-          <select id="chSel">${st.chapters.map(c => `<option value="${c.ch}" ${c.ch === st.chapter ? 'selected' : ''}>บทที่ ${c.ch} (${c.count} ข้อ)</option>`).join('')}</select>
+          <div class="big-question" id="heroQuestion">พร้อมส่งงานหรือยัง?</div>
+          <div class="muted">กรอกรหัสนักศึกษา → ระบบดึงชื่อให้ยืนยัน → เลือกงาน → แนบไฟล์ → รับเลขรับงาน</div>
         </div>
-        <div>
-          <div class="field-label">เวลาทำ (นาที)</div>
-          <input id="durIn" type="number" min="1" max="180" value="${st.durationMin}">
+        <div class="nav">
+          <button class="tab-btn active" data-tab="submit">ส่งงานใหม่</button>
+          <button class="tab-btn" data-tab="status">ตรวจสอบสถานะ</button>
+          <button class="tab-btn" data-tab="teacher">สำหรับอาจารย์</button>
         </div>
-        <div><button class="btn btn-ghost" id="btnSave" style="width:100%">💾 บันทึก</button></div>
       </div>
-      <div class="muted" id="chGroups" style="margin-top:8px"></div>
-      <div class="row2" style="margin-top:12px">
+    </section>
+
+    <div id="globalNotice"></div>
+
+    <section id="tab-submit" class="panel">
+      <div class="panel-title">
         <div>
-          <div class="field-label">QR เปลี่ยนทุก</div>
-          <select id="slotSel">${[10, 15, 30, 60].map(s => `<option value="${s}" ${s === st.slotSeconds ? 'selected' : ''}>${s} วินาที (แคปส่งเพื่อนได้ไม่เกิน ~${s * 2} วิ)</option>`).join('')}</select>
+          <h2>ส่งงานใหม่</h2>
+          <div class="muted">ระบบจะตรวจรหัสจากรายชื่อ และเปลี่ยนชื่อไฟล์ให้อัตโนมัติ</div>
         </div>
+        <div class="loader" id="submitLoader"><span class="spinner"></span>กำลังทำงาน...</div>
+      </div>
+
+      <div class="grid">
+        <div class="col-8">
+          <label for="submitStudentId">รหัสนักศึกษา</label>
+          <input id="submitStudentId" placeholder="เช่น 69172110620-6" autocomplete="off">
+        </div>
+        <div class="col-4" style="align-self:end">
+          <button class="secondary" id="lookupBtn" type="button">ตรวจรหัสและดึงงาน</button>
+        </div>
+      </div>
+
+      <div id="submitStudentBox"></div>
+      <div id="clientDebugBox"></div>
+
+      <div id="submitFormBox" class="hidden">
+        <form id="submissionForm" class="grid" onsubmit="return false;">
+          <input id="hiddenStudentId" name="studentId" type="hidden">
+          <div class="col-12">
+            <label for="assignmentSelect">เลือกงานที่ต้องการส่ง</label>
+            <select id="assignmentSelect" name="assignmentId"></select>
+          </div>
+          <div class="col-12">
+            <label for="workFile">แนบไฟล์งาน</label>
+            <input id="workFile" name="workFile" type="file" required>
+            <div class="muted" style="margin-top:6px">แนะนำให้ใช้ PDF หากเป็นรายงาน ระบบจะไม่ใช้ชื่อไฟล์เดิมของนักศึกษา แต่จะตั้งชื่อใหม่ให้อัตโนมัติ</div>
+          </div>
+          <div class="col-12">
+            <label for="studentNote">หมายเหตุถึงอาจารย์ ถ้ามี</label>
+            <textarea id="studentNote" name="studentNote" placeholder="เช่น ส่งแก้ไขครั้งที่ 2 / ไฟล์แนบเป็น PDF รวมเล่ม"></textarea>
+          </div>
+          <div class="col-12">
+            <button class="primary" id="submitWorkBtn" type="button">ส่งงานและรับเลขรับงาน</button>
+          </div>
+        </form>
+      </div>
+      <div id="receiptBox"></div>
+    </section>
+
+    <section id="tab-status" class="panel hidden">
+      <div class="panel-title">
         <div>
-          <div class="field-label">ตรวจตำแหน่งนักศึกษา</div>
-          <select id="geoSel">
-            <option value="off" ${st.geoMode === 'off' ? 'selected' : ''}>ปิด</option>
-            <option value="warn" ${st.geoMode === 'warn' ? 'selected' : ''}>เตือน — ให้เข้าได้ แต่ติดธงในตาราง</option>
-            <option value="block" ${st.geoMode === 'block' ? 'selected' : ''}>บล็อก — อยู่นอกห้องเข้าไม่ได้</option>
+          <h2>ตรวจสอบสถานะการส่งงาน</h2>
+          <div class="muted">กรอกรหัสนักศึกษาเพื่อดูงานทั้งหมด: ส่งแล้ว / ยังไม่ส่ง / รอตรวจ / ต้องแก้ไข</div>
+        </div>
+        <div class="loader" id="statusLoader"><span class="spinner"></span>กำลังค้นหา...</div>
+      </div>
+      <div class="grid">
+        <div class="col-8">
+          <label for="statusStudentId">รหัสนักศึกษา</label>
+          <input id="statusStudentId" placeholder="เช่น 69172110620-6" autocomplete="off">
+        </div>
+        <div class="col-4" style="align-self:end">
+          <button class="secondary" id="checkStatusBtn" type="button">ตรวจสอบสถานะ</button>
+        </div>
+      </div>
+      <div id="statusResult"></div>
+    </section>
+
+    <section id="tab-teacher" class="panel hidden">
+      <div class="panel-title">
+        <div>
+          <h2>Dashboard อาจารย์</h2>
+          <div class="muted">ดูสรุปส่งงาน เปลี่ยนสถานะ และ export รายชื่อคนยังไม่ส่ง</div>
+        </div>
+        <div class="loader" id="teacherLoader"><span class="spinner"></span>กำลังโหลด...</div>
+      </div>
+
+      <div class="grid">
+        <div class="col-3">
+          <label for="teacherPin">Teacher PIN</label>
+          <input id="teacherPin" type="password" placeholder="PIN">
+        </div>
+        <div class="col-3">
+          <label for="teacherCourse">รายวิชา</label>
+          <select id="teacherCourse"><option value="">ทุกวิชา</option></select>
+        </div>
+        <div class="col-3">
+          <label for="teacherAssignment">งาน</label>
+          <select id="teacherAssignment"><option value="">ทุกงาน</option></select>
+        </div>
+        <div class="col-3">
+          <label for="teacherStatus">สถานะ</label>
+          <select id="teacherStatus">
+            <option value="">ทุกสถานะ</option>
+            <option value="ยังไม่ส่ง">ยังไม่ส่ง</option>
+            <option value="รอตรวจ">รอตรวจ</option>
+            <option value="ตรวจแล้ว">ตรวจแล้ว</option>
+            <option value="ต้องแก้ไข">ต้องแก้ไข</option>
+            <option value="LATE">ส่งล่าช้า</option>
           </select>
         </div>
-      </div>
-      <div class="row2" id="geoBox" style="margin-top:12px">
-        <div style="flex:2">
-          <div class="field-label">พิกัดห้องเรียน (คลิกขวาที่ตึกใน Google Maps แล้วคัดลอกมาวาง)</div>
-          <input id="roomIn" placeholder="เช่น 14.98712, 102.11923" value="${st.roomLat !== null && st.roomLng !== null ? st.roomLat + ', ' + st.roomLng : ''}">
+        <div class="col-12" style="display:flex; gap:10px; flex-wrap:wrap">
+          <button class="primary" id="loadTeacherDashboardBtn" type="button">โหลด Dashboard</button>
+          <button class="secondary" id="exportMissingListBtn" type="button">สร้างชีตรายชื่อคนยังไม่ส่ง</button>
         </div>
-        <div style="flex:0 0 120px;min-width:100px">
-          <div class="field-label">รัศมี (เมตร)</div>
-          <input id="radIn" type="number" min="30" max="2000" value="${st.radius}">
-        </div>
-        <div style="flex:0 0 auto;min-width:0"><button class="btn btn-ghost" id="btnHere" type="button">📍 ใช้ตำแหน่งเครื่องนี้</button></div>
       </div>
-      <div class="muted" id="geoHint" style="margin-top:6px"></div>
-      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:12px" class="muted">
-        <label><input type="checkbox" id="shQ" style="width:auto" ${st.shuffleQ ? 'checked' : ''}> สุ่มลำดับข้อ</label>
-        <label><input type="checkbox" id="shC" style="width:auto" ${st.shuffleC ? 'checked' : ''}> สุ่มลำดับตัวเลือก (อย่าเปิดถ้ามีตัวเลือก "ถูกทุกข้อ")</label>
-      </div>
-      <div style="margin-top:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-        <button class="btn" id="btnOpen" style="min-width:220px"></button>
-        <span class="muted" id="openHint"></span>
-      </div>
-    </div>
 
-    <div class="card">
-      <div class="card-title"><span>QR Code สำหรับนักศึกษา (เปลี่ยนทุก <span id="slotTitle">${st.slotSeconds}</span> วินาที)</span></div>
-      <div class="qr-wrap">
+      <div id="teacherDashboard"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title">
         <div>
-          <div class="qr-box" id="qrBox" title="คลิกเพื่อขยาย"><div id="qrSmall"></div><div class="qr-closed">ปิดรับเข้าสอบ</div></div>
-          <div class="slot-bar-wrap"><div class="slot-bar" id="slotBar"></div></div>
-          <div class="muted center" style="margin-top:4px">QR เปลี่ยนใน <span id="slotSec">—</span> วิ</div>
-        </div>
-        <div class="qr-info">
-          <div class="field-label">ลิงก์ปัจจุบัน (ใช้ได้ไม่เกิน ~<span id="slotLife">${st.slotSeconds * 2}</span> วินาที)</div>
-          <div class="qr-url"><a id="qrLink" href="#" target="_blank">กำลังสร้าง…</a></div>
-          <ul class="muted" style="padding-left:18px;line-height:2;margin-top:10px">
-            <li>ให้นักศึกษาสแกนด้วยแอปกล้อง (เปิดใน Chrome/Safari)</li>
-            <li>แคป QR ส่งเพื่อนจะหมดอายุเร็ว · เปิดตรวจตำแหน่งเพื่อกันคนนอกห้อง</li>
-            <li>เข้าครบแล้วกด "ปิดรับเข้าสอบ" เพื่อกันคนนอก</li>
-          </ul>
-          <button class="btn btn-primary" id="btnFull" style="width:100%;margin-top:10px">⛶ แสดง QR เต็มจอ</button>
+          <h2>งานที่เปิดรับตอนนี้</h2>
+          <div class="muted">รายการนี้ดึงจากชีต ASSIGNMENTS ที่มี Status = OPEN</div>
         </div>
       </div>
-    </div>
+      <div id="openAssignments" class="assignments-list"></div>
+    </section>
 
-    <div class="card">
-      <div class="card-title">สถานะนักศึกษา · บทที่ <span id="dashCh">${st.chapter}</span></div>
-      <div class="row2" style="margin-bottom:12px">
-        <div><select id="deptFilter"><option value="">ทุกสาขา</option>${st.departments.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('')}</select></div>
-        <div style="flex:0 0 auto;min-width:0"><button class="btn btn-ghost" id="btnRefresh">↻ รีเฟรช</button></div>
-      </div>
-      <div class="stats" id="stats"></div>
-      <div class="table-wrap"><table>
-        <thead><tr><th>#</th><th>ชื่อ</th><th>รหัส / รหัสดูคะแนน</th><th>สถานะ</th><th>เวลาเหลือ / คะแนน</th><th>ออกจากหน้า</th><th>หมายเหตุ</th><th></th></tr></thead>
-        <tbody id="tbody"><tr><td colspan="8" class="muted">กำลังโหลด…</td></tr></tbody>
-      </table></div>
-      <div class="muted" id="lastUpd" style="margin-top:8px"></div>
-    </div>
+    <footer id="footerText">© 2026 Chatrachatchaya, Ph.D, Applied Chemistry, RMUTI</footer>
+  </div>
 
-    <div class="modal-backdrop" id="qrModal">
-      <div class="modal" id="qrModalBox">
-        <div style="font-weight:700;font-size:18px">สแกนเพื่อเข้าทำแบบทดสอบ · บทที่ <span id="mCh">${st.chapter}</span></div>
-        <div class="modal-qr" id="mQrWrap"><div id="qrBig"></div><div class="qr-closed" style="font-size:28px">ปิดรับเข้าสอบแล้ว</div></div>
-        <div><span class="big-sec" id="mSec">—</span> <span class="muted">วินาทีก่อน QR เปลี่ยน</span></div>
-        <div class="slot-bar-wrap" style="height:6px"><div class="slot-bar" id="mBar"></div></div>
-        <div style="display:flex;gap:10px;margin-top:16px">
-          <button class="btn btn-ghost" id="btnFs" style="flex:1">⛶ เต็มหน้าจอ</button>
-          <button class="btn btn-ghost" id="btnClose" style="flex:1">✕ ปิด</button>
-        </div>
-      </div>
-    </div>`;
+<script>
+  /* =====================================================
+   *  ตั้งค่า: วาง URL ของ Web App (ลงท้าย /exec) ที่ได้จาก Deploy ของ WorkDrop
+   * ===================================================== */
+  const API_URL = 'https://script.google.com/macros/s/AKfycbyUzzjsdBvWfX0c4SYQ9pq0yTKMzTKVxPHIs8U5Qc1vdT-LBOGp5IhlaEqbRRJxUP71-w/exec';
 
-  const showGroups = () => {
-    const ch = Number($('chSel').value), dc = A.st.deptChapters || {};
-    const yes = Object.keys(dc).filter(d => !dc[d] || dc[d].indexOf(ch) >= 0);
-    $('chGroups').innerHTML = yes.length
-      ? `กลุ่มที่เรียนบทที่ ${ch}: <b>${yes.map(esc).join(', ')}</b>`
-      : `<span style="color:var(--danger)">ไม่มีกลุ่มไหนเรียนบทที่ ${ch} (ตรวจคอลัมน์ Chapters ในชีต Departments)</span>`;
-  };
-  $('chSel').addEventListener('change', showGroups);
-  showGroups();
+  // เรียก API (POST แบบ text/plain → ไม่มี CORS preflight)
+  async function api(action, data = {}, retries = 2) {
+    for (let i = 0; ; i++) {
+      let text = '';
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(Object.assign({ action }, data)) });
+        text = await res.text();
+      } catch (e) {
+        if (!navigator.onLine) return { ok: false, message: 'ไม่มีอินเทอร์เน็ต กรุณาตรวจสอบการเชื่อมต่อ' };
+        if (i >= retries) return { ok: false, network: true, message: 'เชื่อมต่อระบบไม่สำเร็จ — ตรวจว่า Deploy แบบ Who has access: Anyone และ URL ลงท้าย /exec' };
+        await new Promise(r => setTimeout(r, 800 * 2 ** i));
+        continue;
+      }
+      let j;
+      try { j = JSON.parse(text); } catch (e) {
+        return { ok: false, message: /doPost/i.test(text) ? 'Apps Script ยังเป็นโค้ดเก่า — วาง Code.gs ใหม่ แล้ว Deploy เป็น New version'
+          : /sign ?in|accounts\.google/i.test(text) ? 'Apps Script ต้องล็อกอิน — ตั้ง Who has access เป็น Anyone'
+          : 'ระบบตอบกลับไม่ถูกต้อง — ตรวจว่า Deploy โค้ดใหม่แล้ว' };
+      }
+      if (j && j.busy && i < retries) { await new Promise(r => setTimeout(r, 1500 * 2 ** i)); continue; }
+      return j;
+    }
+  }
 
-  const parseLatLng = s => {
-    const m = String(s || '').match(/(-?\d+(?:\.\d+)?)\s*[, ]\s*(-?\d+(?:\.\d+)?)/);
-    return m ? { lat: Number(m[1]), lng: Number(m[2]) } : null;
-  };
-  const geoHint = () => {
-    const mode = $('geoSel').value, p = parseLatLng($('roomIn').value);
-    $('geoBox').style.opacity = mode === 'off' ? .5 : 1;
-    $('geoHint').innerHTML = mode === 'off' ? 'ปิดอยู่ — ไม่ขอตำแหน่งจากนักศึกษา'
-      : !p ? '<span style="color:var(--danger)">ยังไม่ได้ใส่พิกัดห้องเรียน ระบบจะยังไม่ตรวจตำแหน่ง</span>'
-      : `ตรวจในรัศมี ${esc($('radIn').value)} ม. จาก <a href="https://www.google.com/maps?q=${p.lat},${p.lng}" target="_blank" style="color:var(--accent)">${p.lat}, ${p.lng} (ดูบนแผนที่)</a>`;
-  };
-  ['geoSel', 'roomIn', 'radIn'].forEach(id => $(id).addEventListener('input', geoHint));
-  $('geoSel').addEventListener('change', geoHint);
-  geoHint();
-  $('btnHere').onclick = async () => {
-    $('btnHere').disabled = true; $('btnHere').textContent = 'กำลังหาตำแหน่ง…';
-    const p = await getPosition();
-    $('btnHere').disabled = false; $('btnHere').textContent = '📍 ใช้ตำแหน่งเครื่องนี้';
-    if (!p) return toast('หาตำแหน่งไม่ได้ — ลองคัดลอกพิกัดจาก Google Maps แทน', 'error');
-    $('roomIn').value = p.lat.toFixed(6) + ', ' + p.lng.toFixed(6);
-    geoHint();
-    toast(`ได้ตำแหน่งแล้ว (คลาดเคลื่อน ~${p.acc} ม.) อย่าลืมกดบันทึก`, p.acc > 100 ? 'warning' : 'success');
-  };
+  function readFileBase64(file) {
+    return new Promise((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onload = () => resolve(String(fr.result).split(',')[1] || '');
+      fr.onerror = () => reject(new Error('อ่านไฟล์ไม่สำเร็จ กรุณาเลือกไฟล์ใหม่'));
+      fr.readAsDataURL(file);
+    });
+  }
 
-  $('btnSave').onclick = async () => {
-    $('btnSave').disabled = true;
-    const res = await api('admin.update', Object.assign({
-      pin: A.pin, chapter: Number($('chSel').value), durationMin: Number($('durIn').value),
-      shuffleQ: $('shQ').checked, shuffleC: $('shC').checked,
-      slotSeconds: Number($('slotSel').value), geoMode: $('geoSel').value, radius: Number($('radIn').value),
-    }, (() => { const p = parseLatLng($('roomIn').value); return p ? { roomLat: p.lat, roomLng: p.lng } : {}; })()));
-    $('btnSave').disabled = false;
-    if (!res.ok) return toast(res.message, 'error');
-    applyState(res);
-    toast('บันทึกแล้ว — QR ถูกสร้างใหม่สำหรับบทที่ ' + res.chapter, 'success', 3000);
-    refreshQR(); refreshStatus();
-  };
-  $('btnOpen').onclick = async () => {
-    const next = !A.st.open;
-    if (!next && !(await confirmBox('ปิดรับเข้าสอบ? คนที่ยังไม่สแกนจะเข้าไม่ได้ (คนที่เริ่มทำแล้วทำต่อได้ตามปกติ)', 'ปิดรับ'))) return;
-    const res = await api('admin.update', { pin: A.pin, open: next });
-    if (!res.ok) return toast(res.message, 'error');
-    applyState(res);
-  };
-  $('qrBox').onclick = $('btnFull').onclick = () => $('qrModal').classList.add('open');
-  $('btnClose').onclick = () => { $('qrModal').classList.remove('open'); if (document.fullscreenElement) document.exitFullscreen(); };
-  $('btnFs').onclick = () => { try { $('qrModal').requestFullscreen(); } catch (e) {} };
-  $('deptFilter').onchange = e => { A.dept = e.target.value; renderStatus(); };
-  $('btnRefresh').onclick = refreshStatus;
+  let appData = {};
+  let currentStudent = null;
+  let currentAssignments = [];
+  let teacherCoursesCache = [];
+  let teacherAssignmentsCache = [];
+  let teacherDashboardHasLoaded = false;
+  let teacherAutoLoadTimer = null;
 
-  applyState(st);
-  refreshQR();
-  refreshStatus();
-  clearInterval(A.pollTimer);
-  A.pollTimer = setInterval(() => !document.hidden && refreshStatus(), 10000);
-}
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
 
-function applyState(st) {
-  A.st = Object.assign(A.st || {}, st);
-  const open = A.st.open;
-  const b = $('btnOpen');
-  b.className = 'btn ' + (open ? 'btn-danger' : 'btn-success');
-  b.textContent = open ? '🔒 ปิดรับเข้าสอบ' : '🔓 เปิดรับเข้าสอบ';
-  $('openHint').innerHTML = open
-    ? '<span class="badge badge-green">● กำลังเปิดรับ</span>'
-    : '<span class="badge badge-red">● ปิดรับแล้ว</span>';
-  $('qrBox').classList.toggle('is-closed', !open);
-  $('mQrWrap').classList.toggle('is-closed', !open);
-  $('dashCh').textContent = $('mCh').textContent = A.st.chapter;
-}
+  window.addEventListener('load', async () => {
+    bindActions();
+    if (API_URL.includes('วาง_DEPLOYMENT_ID')) {
+      return showGlobal('ยังไม่ได้ตั้งค่า API_URL ในไฟล์ index.html', 'error');
+    }
+    initApp(await api('init'), false);
+    if (location.hash === '#status') switchTab('status');
+    if (location.hash === '#teacher') switchTab('teacher');
+  });
 
-function drawQR(el, text, size) {
-  el.innerHTML = '';
-  if (typeof QRCode === 'undefined') { el.innerHTML = `<div class="muted" style="font-size:11px;word-break:break-all">${esc(text)}</div>`; return; }
-  new QRCode(el, { text, width: size, height: size, correctLevel: QRCode.CorrectLevel.M });
-}
+  function bindActions() {
+    const bind = (id, fn) => {
+      const el = byId(id);
+      if (el && !el.dataset.bound) {
+        el.dataset.bound = '1';
+        el.addEventListener('click', fn);
+      }
+    };
+    bind('lookupBtn', lookupSubmitStudent);
+    bind('submitWorkBtn', submitWork);
+    bind('checkStatusBtn', checkStatus);
+    bind('loadTeacherDashboardBtn', loadTeacherDashboard);
+    bind('exportMissingListBtn', exportMissingList);
 
-async function refreshQR() {
-  clearTimeout(A.qrTimer);
-  const res = await api('admin.qr', { pin: A.pin }, 1);
-  if (!res.ok) {
-    if (res.auth) { sstore.del('pin'); return renderPin(res.message); }
-    A.qrTimer = setTimeout(refreshQR, 4000);
+    const teacherCourse = byId('teacherCourse');
+    if (teacherCourse && !teacherCourse.dataset.boundChange) {
+      teacherCourse.dataset.boundChange = '1';
+      teacherCourse.addEventListener('change', () => {
+        updateTeacherAssignmentOptions();
+        queueTeacherDashboardReload();
+      });
+    }
+    const teacherAssignment = byId('teacherAssignment');
+    if (teacherAssignment && !teacherAssignment.dataset.boundChange) {
+      teacherAssignment.dataset.boundChange = '1';
+      teacherAssignment.addEventListener('change', queueTeacherDashboardReload);
+    }
+    const teacherStatus = byId('teacherStatus');
+    if (teacherStatus && !teacherStatus.dataset.boundChange) {
+      teacherStatus.dataset.boundChange = '1';
+      teacherStatus.addEventListener('change', queueTeacherDashboardReload);
+    }
+    const teacherPin = byId('teacherPin');
+    try { if (teacherPin && !teacherPin.value) teacherPin.value = sessionStorage.getItem('wd_pin') || ''; } catch (e) {}
+    if (teacherPin && !teacherPin.dataset.boundEnter) {
+      teacherPin.dataset.boundEnter = '1';
+      teacherPin.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); loadTeacherDashboard(); }
+      });
+    }
+
+    const sidInput = byId('submitStudentId');
+    if (sidInput && !sidInput.dataset.boundEnter) {
+      sidInput.dataset.boundEnter = '1';
+      sidInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); lookupSubmitStudent(); }
+      });
+    }
+  }
+
+  function canCallServer_() { return true; }
+
+  function errorMessage_(err) {
+    return (err && err.message) ? err.message : (err ? String(err) : 'ไม่ทราบรายละเอียดข้อผิดพลาด');
+  }
+
+  function initApp(res, fromBootstrap) {
+    if (!res || !res.ok) {
+      showGlobal((res && res.message) || 'โหลดข้อมูลไม่สำเร็จ', 'error');
+      renderDiagnostics((res && res.diagnostics) || {}, fromBootstrap ? 'server-bootstrap-error' : 'client-error');
+      return;
+    }
+    appData = res;
+    showGlobal('', '');
+    // ใช้ชื่อระบบแบบไม่เป็นทางการสำหรับหน้าเว็บนักศึกษา
+    byId('systemName').textContent = 'WorkDrop Class';
+    byId('subtitle').textContent = res.subtitle;
+    byId('teacherName').textContent = res.teacherName;
+    byId('footerText').textContent = res.footer;
+    byId('serverTime').textContent = 'เวลาเซิร์ฟเวอร์: ' + res.serverTime;
+    renderOpenAssignments(res.activeAssignments || []);
+    fillTeacherFilters(res.courses || [], res.activeAssignments || []);
+    if (res.diagnostics) renderDiagnostics(res.diagnostics, fromBootstrap ? 'server-bootstrap-ok' : 'client-refresh-ok');
+  }
+
+  function renderDiagnostics(d, source) {
+    // ซ่อนกล่อง Diagnostics สำหรับหน้าใช้งานจริง
     return;
   }
-  if (res.open !== A.st.open || res.chapter !== A.st.chapter) applyState({ open: res.open, chapter: res.chapter });
-  const url = studentBaseUrl() + 't=' + encodeURIComponent(res.token);
-  drawQR($('qrSmall'), url, 184);
-  drawQR($('qrBig'), url, 520);
-  $('qrLink').textContent = url; $('qrLink').href = url;
 
-  if (res.slotSeconds && res.slotSeconds !== A.st.slotSeconds) A.st.slotSeconds = res.slotSeconds;
-  $('slotTitle').textContent = A.st.slotSeconds; $('slotLife').textContent = A.st.slotSeconds * 2;
-  const total = A.st.slotSeconds * 1000, end = Date.now() + res.expiresInMs;
-  clearInterval(A.slotTimer);
-  const upd = () => {
-    const remain = Math.max(0, end - Date.now());
-    const pct = remain / total * 100 + '%';
-    $('slotBar').style.width = $('mBar').style.width = pct;
-    $('slotSec').textContent = $('mSec').textContent = Math.ceil(remain / 1000);
-  };
-  upd();
-  A.slotTimer = setInterval(upd, 250);
-  A.qrTimer = setTimeout(refreshQR, res.expiresInMs + 300);
-}
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    ['submit','status','teacher'].forEach(t => byId('tab-' + t).classList.toggle('hidden', t !== tab));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
-async function refreshStatus() {
-  const res = await api('admin.status', { pin: A.pin }, 1);
-  if (!res.ok) return;
-  A.rows = res.rows;
-  A.statusAt = Date.now();
-  A.serverOffset = res.now - Date.now();
-  if (res.open !== A.st.open || res.chapter !== A.st.chapter) applyState({ open: res.open, chapter: res.chapter });
-  renderStatus();
-}
+  function renderOpenAssignments(list) {
+    const box = byId('openAssignments');
+    if (!list.length) {
+      box.innerHTML = '<div class="notice warn">ยังไม่มีงานที่เปิดรับในตอนนี้</div>';
+      return;
+    }
+    box.innerHTML = list.map(a => {
+      const openClose = [
+        a.Open_Date_Display ? `<div class="muted">เปิดรับ: ${escapeHtml(a.Open_Date_Display)}</div>` : '',
+        a.Close_Date_Display ? `<div class="muted">ปิดรับ: ${escapeHtml(a.Close_Date_Display)}</div>` : ''
+      ].filter(Boolean).join('');
+      return `
+        <div class="assignment-card">
+          <span class="pill open">เปิดรับงาน</span>
+          <h3>${escapeHtml(a.Assignment_Name)}</h3>
+          <div class="muted">${escapeHtml(a.Course_Name || a.Course_ID)}</div>
+          <div style="margin-top:8px"><b>กำหนดส่ง:</b> ${escapeHtml(a.Due_Date_Display || '-')}</div>
+          ${openClose}
+          ${a.Description ? `<div class="muted" style="margin-top:6px">${escapeHtml(a.Description)}</div>` : ''}
+        </div>
+      `;
+    }).join('');
+  }
 
-const STATUS_LABEL = {
-  none: ['ยังไม่เข้า', 'badge-gray'],
-  active: ['กำลังทำ', 'badge-blue'],
-  submitted: ['ส่งแล้ว', 'badge-green'],
-  auto: ['ส่งอัตโนมัติ', 'badge-amber'],
-  late: ['ส่งช้า', 'badge-red'],
-};
+  function fillTeacherFilters(courses, assignments) {
+    teacherCoursesCache = Array.isArray(courses) ? courses.slice() : [];
+    teacherAssignmentsCache = Array.isArray(assignments) ? assignments.slice() : [];
 
-function renderStatus() {
-  const rows = A.rows.filter(r => !A.dept || r.dept === A.dept);
-  const c = { none: 0, active: 0, done: 0, flag: 0 };
-  rows.forEach(r => {
-    if (r.status === 'none') c.none++;
-    else if (r.status === 'active') c.active++;
-    else c.done++;
-    if (r.tabs >= 3 || r.blocked || /^far:/.test(r.geo || '') || r.geo === 'none') c.flag++;
-  });
-  $('stats').innerHTML = `
-    <div class="stat"><b>${c.none}</b><span>ยังไม่เข้า</span></div>
-    <div class="stat"><b style="color:var(--accent)">${c.active}</b><span>กำลังทำ</span></div>
-    <div class="stat"><b style="color:var(--success)">${c.done}</b><span>ส่งแล้ว</span></div>
-    <div class="stat"><b style="color:var(--danger)">${c.flag}</b><span>น่าสงสัย</span></div>`;
+    const currentCourse = byId('teacherCourse').value || '';
+    const currentAssignment = byId('teacherAssignment').value || '';
 
-  $('tbody').innerHTML = rows.length ? rows.map(r => {
-    const [label, cls] = STATUS_LABEL[r.status] || [r.status, 'badge-gray'];
-    let info = '';
-    if (r.status === 'active') {
-      const sec = Math.max(0, r.remainSec);
-      info = sec > 0 ? `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}` : 'หมดเวลา';
-    } else if (r.status !== 'none') info = `<b>${r.score}/${r.total}</b>`;
-    const notes = [];
-    if (r.blocked) notes.push(`มีเครื่อง/ชื่ออื่นพยายามเข้า ${r.blocked} ครั้ง`);
-    if (r.lateSec) notes.push(`ช้า ${r.lateSec} วิ`);
-    if (r.status === 'active' && !r.deviceBound) notes.push('รอสแกนจากเครื่องใหม่');
-    if (r.released) notes.push('ปล่อยเครื่องให้คนอื่นแล้ว');
-    const geoFar = /^far:/.test(r.geo || ''), geoNone = r.geo === 'none';
-    if (geoFar) notes.push(`📍 นอกห้อง ~${r.geo.split(':')[1]} ม.`);
-    if (geoNone) notes.push('📍 ไม่ให้ตำแหน่ง');
-    const flag = r.tabs >= 3 || r.blocked || geoFar || geoNone;
-    return `<tr class="${flag ? 'flag' : ''}">
-      <td class="muted">${r.no}</td>
-      <td>${esc(r.name)}<div class="muted">${esc(r.dept)}</div></td>
-      <td>${esc(r.id)}<div class="muted" style="font-family:'Inter',monospace;letter-spacing:1px">${esc(r.viewCode || '')}</div></td>
-      <td><span class="badge ${cls}">${label}</span></td>
-      <td>${info}</td>
-      <td>${r.tabs ? `<span class="badge ${r.tabs >= 3 ? 'badge-red' : 'badge-amber'}">${r.tabs} ครั้ง</span>` : (r.status === 'none' ? '' : '0')}</td>
-      <td class="muted">${esc(notes.join(' · '))}</td>
-      <td style="white-space:nowrap">${r.status === 'active' && r.deviceBound ? `<button class="btn btn-ghost btn-sm" data-unbind="${esc(r.id)}" data-name="${esc(r.name)}">ย้ายเครื่อง</button> ` : ''}${['submitted', 'auto', 'late'].includes(r.status) && !r.released ? `<button class="btn btn-ghost btn-sm" data-release="${esc(r.id)}" data-name="${esc(r.name)}" title="ให้เพื่อนยืมเครื่องนี้สอบบทเดียวกันได้">ปล่อยเครื่อง</button> ` : ''}${r.status !== 'none' ? `<button class="btn btn-ghost btn-sm" style="color:var(--danger)" data-reset="${esc(r.id)}" data-name="${esc(r.name)}" data-dept="${esc(r.dept)}">รีเซ็ต</button>` : ''}</td>
-    </tr>`;
-  }).join('') : `<tr><td colspan="8" class="muted">ไม่มีรายชื่อ</td></tr>`;
+    byId('teacherCourse').innerHTML = '<option value="">ทุกวิชา</option>' + teacherCoursesCache.map(c => `<option value="${escapeAttr(c.Course_ID)}">${escapeHtml(c.Course_ID)} - ${escapeHtml(c.Course_Name)} ${c.Section ? '(' + escapeHtml(c.Section) + ')' : ''}</option>`).join('');
 
-  $('tbody').querySelectorAll('[data-unbind]').forEach(b => {
-    b.onclick = async () => {
-      if (!(await confirmBox(`ย้ายเครื่องให้ ${b.dataset.name}? นักศึกษาต้องสแกน QR ใหม่จากเครื่องใหม่ เวลาสอบเดินต่อจากเดิม`, 'ย้ายเครื่อง'))) return;
-      const res = await api('admin.unbind', { pin: A.pin, studentId: b.dataset.unbind });
-      toast(res.ok ? 'ปลดเครื่องแล้ว ให้นักศึกษาสแกน QR ใหม่' : res.message, res.ok ? 'success' : 'error', 4000);
-      refreshStatus();
+    if (currentCourse && teacherCoursesCache.some(c => String(c.Course_ID) === String(currentCourse))) {
+      byId('teacherCourse').value = currentCourse;
+    }
+    updateTeacherAssignmentOptions(currentAssignment);
+  }
+
+  function updateTeacherAssignmentOptions(preferredAssignmentId) {
+    const selectedCourse = byId('teacherCourse').value || '';
+    const selectedAssignment = preferredAssignmentId !== undefined ? preferredAssignmentId : (byId('teacherAssignment').value || '');
+
+    let list = teacherAssignmentsCache || [];
+    if (selectedCourse) {
+      list = list.filter(a => String(a.Course_ID || '').trim().toLowerCase() === String(selectedCourse).trim().toLowerCase());
+    }
+
+    byId('teacherAssignment').innerHTML = '<option value="">ทุกงาน</option>' + list.map(a => `<option value="${escapeAttr(a.Assignment_ID)}">${escapeHtml(a.Assignment_ID)} - ${escapeHtml(a.Assignment_Name)}</option>`).join('');
+
+    if (selectedAssignment && list.some(a => String(a.Assignment_ID) === String(selectedAssignment))) {
+      byId('teacherAssignment').value = selectedAssignment;
+    } else {
+      byId('teacherAssignment').value = '';
+    }
+  }
+
+  function queueTeacherDashboardReload() {
+    if (!byId('teacherPin').value) return;
+    clearTimeout(teacherAutoLoadTimer);
+    teacherAutoLoadTimer = setTimeout(() => loadTeacherDashboard(), 250);
+  }
+
+  function updateTeacherFiltersFromDashboardResponse(res) {
+    if (!res || !res.filters) return;
+    const currentCourse = byId('teacherCourse').value || '';
+    const currentAssignment = byId('teacherAssignment').value || '';
+
+    const courses = (res.filters.courses && res.filters.courses.length) ? res.filters.courses : teacherCoursesCache;
+    const assignments = (res.filters.assignments && res.filters.assignments.length) ? res.filters.assignments : teacherAssignmentsCache;
+
+    if (assignments && assignments.length) teacherAssignmentsCache = assignments.slice();
+    if (courses && courses.length) teacherCoursesCache = courses.slice();
+
+    byId('teacherCourse').innerHTML = '<option value="">ทุกวิชา</option>' + teacherCoursesCache.map(c => `<option value="${escapeAttr(c.Course_ID)}">${escapeHtml(c.Course_ID)} - ${escapeHtml(c.Course_Name)} ${c.Section ? '(' + escapeHtml(c.Section) + ')' : ''}</option>`).join('');
+    if (currentCourse && teacherCoursesCache.some(c => String(c.Course_ID) === String(currentCourse))) byId('teacherCourse').value = currentCourse;
+
+    updateTeacherAssignmentOptions(currentAssignment);
+  }
+
+  function lookupSubmitStudent() {
+    const sid = byId('submitStudentId').value.trim();
+    byId('receiptBox').innerHTML = '';
+    byId('clientDebugBox').innerHTML = '';
+    byId('submitFormBox').classList.add('hidden');
+    if (!sid) return showBox('submitStudentBox', 'กรุณากรอกรหัสนักศึกษาก่อน', 'warn');
+    if (!canCallServer_('submitStudentBox')) return;
+
+    showBox('submitStudentBox', 'กำลังตรวจรหัสนักศึกษาและดึงรายการงาน...', 'warn');
+    setLoader('submitLoader', true);
+    api('lookup', { studentId: sid }).then(res => {
+      setLoader('submitLoader', false);
+      if (!res || !res.ok) return renderStudentLookupError(res || {message:'ไม่พบข้อมูล'}, 'submitStudentBox');
+      currentStudent = res.student;
+      currentAssignments = res.assignments || [];
+      renderSubmitStudent(res.student, currentAssignments, res.warning || '');
+    });
+  }
+
+  function renderSubmitStudent(student, assignments, warning) {
+    const box = byId('submitStudentBox');
+    box.innerHTML = `
+      <div class="student-card">
+        <p class="student-name">${escapeHtml(student.Name)}</p>
+        <div class="muted">รหัส ${escapeHtml(student.Student_ID)} | กลุ่ม ${escapeHtml(student.Section)} | รายวิชา ${escapeHtml(student.Course_ID)}</div>
+        <div style="margin-top:10px"><span class="pill ok">ยืนยันตัวตนจากรายชื่อแล้ว</span></div>
+      </div>`;
+
+    const hiddenSid = byId('hiddenStudentId');
+    if (hiddenSid) hiddenSid.value = student.Student_ID || '';
+
+    if (warning) box.innerHTML += '<div class="notice warn">' + escapeHtml(warning) + '</div>';
+    if ((!assignments || !assignments.length) && appData.activeAssignments && appData.activeAssignments.length) {
+      assignments = appData.activeAssignments;
+      box.innerHTML += '<div class="notice warn">ใช้รายการงานที่เปิดรับจากหน้าแรกเป็นตัวเลือกสำรอง</div>';
+    }
+
+    const select = byId('assignmentSelect');
+    if (!assignments.length) {
+      byId('submitFormBox').classList.add('hidden');
+      box.innerHTML += '<div class="notice warn">ยังไม่มีงานที่เปิดรับสำหรับรายวิชาของนักศึกษาคนนี้</div>';
+      return;
+    }
+    select.innerHTML = assignments.map(a => `<option value="${escapeAttr(a.Assignment_ID)}">${escapeHtml(a.Assignment_Name)} | กำหนด ${escapeHtml(a.Due_Date_Display || '-')}</option>`).join('');
+    byId('submitFormBox').classList.remove('hidden');
+  }
+
+  async function submitWork() {
+    if (!currentStudent) return showGlobal('กรุณาตรวจรหัสนักศึกษาก่อนส่งงาน', 'warn');
+    if (!canCallServer_('receiptBox')) return;
+
+    const form = byId('submissionForm');
+    const fileInput = byId('workFile');
+    const assignmentValue = byId('assignmentSelect').value;
+    if (!assignmentValue) return showBox('receiptBox', 'กรุณาเลือกงานก่อนส่ง', 'warn');
+    if (!fileInput.files || !fileInput.files[0]) return showBox('receiptBox', 'กรุณาเลือกไฟล์ก่อนส่ง', 'warn');
+
+    const hiddenSid = byId('hiddenStudentId');
+    if (hiddenSid) hiddenSid.value = currentStudent.Student_ID || byId('submitStudentId').value.trim();
+
+    const file = fileInput.files[0];
+    const maxMb = Number((currentAssignments.find(a => String(a.Assignment_ID) === String(assignmentValue)) || {}).Max_File_MB || (appData.config && appData.config.MAX_FILE_MB_DEFAULT) || 15);
+    if (file.size > maxMb * 1024 * 1024) {
+      return showBox('receiptBox', 'ไฟล์นี้ใหญ่เกิน ' + maxMb + ' MB กรุณาลดขนาดไฟล์ก่อนส่ง', 'error');
+    }
+
+    setLoader('submitLoader', true);
+    byId('submitWorkBtn').disabled = true;
+    byId('clientDebugBox').innerHTML = '';
+    const sizeMb = (file.size / 1024 / 1024).toFixed(1);
+    const t0 = Date.now();
+    const tick = () => showBox('receiptBox', `กำลังอัปโหลด ${file.name} (${sizeMb} MB) … ${Math.round((Date.now() - t0) / 1000)} วินาที — อย่าปิดหน้านี้`, 'warn');
+    tick();
+    const timer = setInterval(tick, 1000);
+
+    let res;
+    try {
+      const base64 = await readFileBase64(file);
+      // ไม่ retry อัตโนมัติ กันส่งซ้ำโดยไม่ตั้งใจ
+      res = await api('submit', {
+        studentId: hiddenSid ? hiddenSid.value : currentStudent.Student_ID,
+        assignmentId: assignmentValue,
+        note: byId('studentNote').value,
+        file: { name: file.name, mimeType: file.type || 'application/octet-stream', base64 }
+      }, 0);
+    } catch (err) {
+      res = { ok: false, message: errorMessage_(err) };
+    }
+    clearInterval(timer);
+    setLoader('submitLoader', false);
+    byId('submitWorkBtn').disabled = false;
+    if (!res || !res.ok) {
+      const extra = res && res.network ? ' — ก่อนกดส่งใหม่ ให้ไปที่แท็บ "ตรวจสอบสถานะ" ดูก่อนว่างานเข้าระบบแล้วหรือยัง' : '';
+      return showBox('receiptBox', ((res && res.message) || 'ส่งงานไม่สำเร็จ') + extra, 'error');
+    }
+    renderReceipt(res);
+    byId('workFile').value = '';
+    byId('studentNote').value = '';
+  }
+
+  function renderReceipt(res) {
+    const latePill = res.lateStatus === 'LATE' ? '<span class="pill late">ส่งล่าช้า</span>' : '<span class="pill ok">ส่งทันเวลา</span>';
+    byId('receiptBox').innerHTML = `
+      <div class="receipt-card">
+        <div class="notice success"><b>ส่งงานเรียบร้อยแล้ว</b> โปรดเก็บเลขรับงานไว้เป็นหลักฐาน</div>
+        <div class="grid">
+          <div class="col-6"><label>เลขรับงาน</label><div style="font-size:22px;font-weight:900;color:var(--primary)">${escapeHtml(res.receiptId)}</div></div>
+          <div class="col-6"><label>เวลาส่ง</label><div>${escapeHtml(res.timestamp)}</div></div>
+          <div class="col-6"><label>ผู้ส่ง</label><div>${escapeHtml(res.student.Name)} (${escapeHtml(res.student.Student_ID)})</div></div>
+          <div class="col-6"><label>งาน</label><div>${escapeHtml(res.assignment.Assignment_Name)}</div></div>
+          <div class="col-6"><label>Version</label><div>V${escapeHtml(res.version)}</div></div>
+          <div class="col-6"><label>สถานะ</label><div>${latePill} <span class="pill wait">รอตรวจ</span></div></div>
+        </div>
+        <div class="muted" style="margin-top:12px">แคปหน้าจอนี้เก็บไว้เป็นหลักฐานการส่งงาน</div>
+      </div>`;
+  }
+
+  function checkStatus() {
+    const sid = byId('statusStudentId').value.trim();
+    if (!sid) return showBox('statusResult', 'กรุณากรอกรหัสนักศึกษาก่อน', 'warn');
+    setLoader('statusLoader', true);
+    api('status', { studentId: sid }).then(res => {
+      setLoader('statusLoader', false);
+      if (!res || !res.ok) return renderStudentLookupError(res || {}, 'statusResult');
+      renderStatus(res);
+    });
+  }
+
+  function renderStatus(res) {
+    const s = res.student;
+    const k = res.summary;
+    const rows = res.items || [];
+    byId('statusResult').innerHTML = `
+      <div class="student-card">
+        <p class="student-name">${escapeHtml(s.Name)}</p>
+        <div class="muted">รหัส ${escapeHtml(s.Student_ID)} | กลุ่ม ${escapeHtml(s.Section)} | รายวิชา ${escapeHtml(s.Course_ID)}</div>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><div class="num">${k.total}</div><div class="txt">งานทั้งหมด</div></div>
+        <div class="kpi"><div class="num">${k.submitted}</div><div class="txt">ส่งแล้ว</div></div>
+        <div class="kpi"><div class="num">${k.notSubmitted}</div><div class="txt">ยังไม่ส่ง</div></div>
+        <div class="kpi"><div class="num">${k.late}</div><div class="txt">ล่าช้า</div></div>
+        <div class="kpi"><div class="num">${k.revision}</div><div class="txt">ต้องแก้ไข</div></div>
+        <div class="kpi"><div class="num">${k.checked}</div><div class="txt">ตรวจแล้ว</div></div>
+        <div class="kpi"><div class="num">${k.total ? Math.round(k.submitted / k.total * 100) : 0}%</div><div class="txt">ความครบถ้วน</div></div>
+      </div>
+      ${rows.map(renderStatusRow).join('') || '<div class="notice warn">ยังไม่มีรายการงานสำหรับรายวิชานี้</div>'}`;
+  }
+
+  function renderStatusRow(i) {
+    const submittedPill = i.Is_Submitted ? '<span class="pill ok">ส่งแล้ว</span>' : '<span class="pill none">ยังไม่ส่ง</span>';
+    const latePill = i.Late_Status === 'LATE' ? '<span class="pill late">ล่าช้า</span>' : '';
+    const checkPill = statusPill(i.Check_Status);
+    const fileLink = i.File_URL ? `<a class="link-btn secondary" href="${escapeAttr(i.File_URL)}" target="_blank">เปิดไฟล์</a>` : '';
+    return `
+      <div class="status-row">
+        <div>
+          <h3>${escapeHtml(i.Assignment_Name)}</h3>
+          <div class="muted">${escapeHtml(i.Course_Name)} | กำหนด ${escapeHtml(i.Due_Date || '-')}</div>
+          ${i.Teacher_Note ? `<div class="notice warn" style="margin-bottom:0"><b>หมายเหตุอาจารย์:</b> ${escapeHtml(i.Teacher_Note)}</div>` : ''}
+        </div>
+        <div>
+          ${submittedPill} ${checkPill} ${latePill}
+          ${i.Timestamp ? `<div class="muted" style="margin-top:6px">ส่งเมื่อ ${escapeHtml(i.Timestamp)} | ${escapeHtml(i.Receipt_ID)} | V${escapeHtml(i.Version)}</div>` : ''}
+        </div>
+        <div>${fileLink}</div>
+      </div>`;
+  }
+
+  function loadTeacherDashboard() {
+    const pin = byId('teacherPin').value;
+    const filters = {
+      courseId: byId('teacherCourse').value,
+      assignmentId: byId('teacherAssignment').value,
+      status: byId('teacherStatus').value
     };
-  });
-  $('tbody').querySelectorAll('[data-release]').forEach(b => {
-    b.onclick = async () => {
-      if (!(await confirmBox(`ปล่อยเครื่องของ ${b.dataset.name}? เพื่อนจะยืมเครื่องนี้สอบบทที่ ${A.st.chapter} ได้ 1 คน (คะแนนของ ${b.dataset.name} ยังอยู่ครบ)`, 'ปล่อยเครื่อง'))) return;
-      const res = await api('admin.release', { pin: A.pin, studentId: b.dataset.release });
-      toast(res.ok ? 'ปล่อยเครื่องแล้ว ให้เพื่อนสแกน QR ใหม่จากเครื่องนี้' : res.message, res.ok ? 'success' : 'error', 4000);
-      refreshStatus();
-    };
-  });
-  $('tbody').querySelectorAll('[data-reset]').forEach(b => {
-    b.onclick = async () => {
-      if (!(await confirmBox(`รีเซ็ต ${b.dataset.name}? ระบบจะลบผลสอบบทที่ ${A.st.chapter} ของคนนี้ (ทั้งในชีต Sessions และชีตผลลัพธ์) แล้วให้สอบใหม่ได้`, 'ลบและให้สอบใหม่'))) return;
-      const res = await api('admin.reset', { pin: A.pin, studentId: b.dataset.reset, department: b.dataset.dept });
-      toast(res.ok ? `ลบแล้ว — ${b.dataset.name} สแกน QR สอบใหม่ได้` : res.message, res.ok ? 'success' : 'error', 4000);
-      refreshStatus();
-    };
-  });
-  $('lastUpd').textContent = 'อัปเดตล่าสุด ' + new Date().toLocaleTimeString('th-TH');
-}
+    if (!pin) return showBox('teacherDashboard', 'กรุณาใส่ PIN', 'warn');
+    setLoader('teacherLoader', true);
+    api('teacher.dashboard', { pin, filters }).then(res => {
+      setLoader('teacherLoader', false);
+      if (!res || !res.ok) return showBox('teacherDashboard', (res && res.message) || 'โหลด Dashboard ไม่สำเร็จ', 'error');
+      try { sessionStorage.setItem('wd_pin', pin); } catch (e) {}
+      renderTeacherDashboard(res);
+    });
+  }
 
-boot();
+  function renderTeacherDashboard(res) {
+    teacherDashboardHasLoaded = true;
+    updateTeacherFiltersFromDashboardResponse(res);
+    const k = res.kpi;
+    const rows = res.rows || [];
+    byId('teacherDashboard').innerHTML = `
+      <div class="kpis" style="margin-top:16px">
+        <div class="kpi"><div class="num">${k.total}</div><div class="txt">รายการทั้งหมด</div></div>
+        <div class="kpi"><div class="num">${k.submitted}</div><div class="txt">ส่งแล้ว</div></div>
+        <div class="kpi"><div class="num">${k.notSubmitted}</div><div class="txt">ยังไม่ส่ง</div></div>
+        <div class="kpi"><div class="num">${k.late}</div><div class="txt">ล่าช้า</div></div>
+        <div class="kpi"><div class="num">${k.waitCheck}</div><div class="txt">รอตรวจ</div></div>
+        <div class="kpi"><div class="num">${k.revision}</div><div class="txt">ต้องแก้ไข</div></div>
+        <div class="kpi"><div class="num">${k.checked}</div><div class="txt">ตรวจแล้ว</div></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>รหัส</th><th>ชื่อ</th><th>กลุ่ม</th><th>งาน</th><th>กำหนดส่ง</th><th>เวลาส่ง</th><th>สถานะ</th><th>หมายเหตุ</th><th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(renderTeacherRow).join('') || '<tr><td colspan="9">ไม่พบข้อมูลตามเงื่อนไข</td></tr>'}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  function renderTeacherRow(r) {
+    const action = r.Submit_ID ? `
+      <div class="small-actions">
+        ${r.File_URL ? `<a class="link-btn secondary" href="${escapeAttr(r.File_URL)}" target="_blank">ไฟล์</a>` : ''}
+        ${r.Folder_URL ? `<a class="link-btn ghost" href="${escapeAttr(r.Folder_URL)}" target="_blank">โฟลเดอร์</a>` : ''}
+        <button class="ghost" onclick="setRowStatus('${escapeAttr(r.Submit_ID)}','ตรวจแล้ว')">ตรวจแล้ว</button>
+        <button class="ghost" onclick="setRowStatus('${escapeAttr(r.Submit_ID)}','ต้องแก้ไข')">ต้องแก้ไข</button>
+        <button class="ghost" onclick="setRowStatus('${escapeAttr(r.Submit_ID)}','รอตรวจ')">รอตรวจ</button>
+      </div>` : '<span class="muted">ยังไม่มีไฟล์</span>';
+
+    return `
+      <tr>
+        <td>${escapeHtml(r.Student_ID)}</td>
+        <td><b>${escapeHtml(r.Name)}</b><div class="muted">${escapeHtml(r.Course_ID)}</div></td>
+        <td>${escapeHtml(r.Section)}</td>
+        <td>${escapeHtml(r.Assignment_Name)}<div class="muted">${escapeHtml(r.Assignment_ID)}</div></td>
+        <td>${escapeHtml(r.Due_Date || '-')}</td>
+        <td>${escapeHtml(r.Timestamp || '-')} ${r.Receipt_ID ? `<div class="muted">${escapeHtml(r.Receipt_ID)} | V${escapeHtml(r.Version)}</div>` : ''}</td>
+        <td>${statusPill(r.Check_Status)} ${r.Late_Status === 'LATE' ? '<span class="pill late">ล่าช้า</span>' : ''}</td>
+        <td>${escapeHtml(r.Teacher_Note || '')}${r.Email_Match_Status === 'NOT_MATCH' ? '<div class="pill late">อีเมลไม่ตรง</div>' : ''}</td>
+        <td>${action}</td>
+      </tr>`;
+  }
+
+  function setRowStatus(submitId, status) {
+    const pin = byId('teacherPin').value;
+    const note = prompt('หมายเหตุถึงนักศึกษา / หมายเหตุการตรวจ', '');
+    if (note === null) return;
+    setLoader('teacherLoader', true);
+    api('teacher.update', { pin, submitId, checkStatus: status, teacherNote: note }).then(res => {
+      setLoader('teacherLoader', false);
+      if (!res || !res.ok) return showGlobal((res && res.message) || 'อัปเดตไม่สำเร็จ', 'error');
+      showGlobal(res.message, 'success');
+      loadTeacherDashboard();
+    });
+  }
+
+  function exportMissingList() {
+    const pin = byId('teacherPin').value;
+    setLoader('teacherLoader', true);
+    api('teacher.export', { pin, courseId: byId('teacherCourse').value, assignmentId: byId('teacherAssignment').value, section: '' }).then(res => {
+      setLoader('teacherLoader', false);
+      if (!res || !res.ok) return showGlobal((res && res.message) || 'Export ไม่สำเร็จ', 'error');
+      showGlobal(res.message, 'success');
+    });
+  }
+
+  function renderStudentLookupError(res, boxId) {
+    let html = `<div class="notice error">${escapeHtml(res.message || 'ไม่พบข้อมูล')}</div>`;
+    if (res.suggestions && res.suggestions.length) {
+      html += '<div class="notice warn"><b>รหัสใกล้เคียงที่พบ:</b><br>' + res.suggestions.map(s => `
+        <button class="ghost" style="margin:6px 6px 0 0" onclick="useSuggestedId('${escapeAttr(s.Student_ID)}','${boxId}')">${escapeHtml(s.Student_ID)} - ${escapeHtml(s.Name)}</button>
+      `).join('') + '</div>';
+    }
+    byId(boxId).innerHTML = html;
+    if (boxId === 'submitStudentBox') byId('submitFormBox').classList.add('hidden');
+  }
+
+  function useSuggestedId(sid, boxId) {
+    if (boxId === 'submitStudentBox') {
+      byId('submitStudentId').value = sid;
+      lookupSubmitStudent();
+    } else {
+      byId('statusStudentId').value = sid;
+      checkStatus();
+    }
+  }
+
+  function statusPill(status) {
+    if (status === 'ตรวจแล้ว') return '<span class="pill checked">ตรวจแล้ว</span>';
+    if (status === 'ต้องแก้ไข') return '<span class="pill revision">ต้องแก้ไข</span>';
+    if (status === 'รอตรวจ') return '<span class="pill wait">รอตรวจ</span>';
+    if (status === 'ยังไม่ส่ง') return '<span class="pill none">ยังไม่ส่ง</span>';
+    if (status === 'ไม่รับงาน') return '<span class="pill late">ไม่รับงาน</span>';
+    return `<span class="pill none">${escapeHtml(status || '-')}</span>`;
+  }
+
+  function showGlobal(message, type) {
+    const box = byId('globalNotice');
+    if (!message) { box.innerHTML = ''; return; }
+    box.innerHTML = `<div class="notice ${type || ''}">${escapeHtml(message)}</div>`;
+    setTimeout(() => { box.innerHTML = ''; }, 6500);
+  }
+  function showBox(id, message, type) { byId(id).innerHTML = `<div class="notice ${type || ''}">${escapeHtml(message)}</div>`; }
+  function setLoader(id, show) { byId(id).classList.toggle('show', !!show); }
+  function byId(id) { return document.getElementById(id); }
+  function escapeHtml(v) { return String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+  function escapeAttr(v) { return escapeHtml(v).replace(/`/g, '&#96;'); }
 </script>
 </body>
 </html>
