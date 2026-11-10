@@ -163,6 +163,17 @@
     .spinner { width: 16px; height: 16px; border-radius: 50%; border: 3px solid var(--tint2); border-top-color: var(--primary); animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .hidden { display: none !important; }
+    .picked { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .thumb { position: relative; width: 78px; height: 100px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); background: #fff; flex-shrink: 0; }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .thumb .n { position: absolute; left: 4px; top: 4px; background: rgba(21,57,59,.7); color: #fff; font-size: 11px; font-weight: 600; border-radius: 6px; padding: 0 6px; }
+    .thumb button { position: absolute; right: 4px; top: 4px; width: 24px; height: 24px; padding: 0; border-radius: 50%; background: rgba(21,57,59,.7); color: #fff; font-size: 12px; }
+    .thumb.add { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border: 1.5px dashed var(--tint2); background: var(--primary-soft); color: var(--primary); font-size: 22px; font-weight: 600; cursor: pointer; margin: 0; }
+    .thumb.add small { font-size: 12px; }
+    .doc-chip { display: inline-flex; align-items: center; gap: 10px; padding: 8px 8px 8px 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff; max-width: 100%; }
+    .doc-chip b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .doc-chip button { padding: 4px 10px; font-size: 13px; }
+    .picked-note { width: 100%; font-size: 13px; color: var(--muted); }
     #clientDebugBox { display: none !important; }
     footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
     @media (max-width: 850px) {
@@ -251,8 +262,9 @@
           </div>
           <div class="col-12">
             <label for="workFile">แนบไฟล์งาน</label>
-            <input id="workFile" name="workFile" type="file" required>
-            <div class="muted" style="margin-top:6px">รายงานแนะนำให้ส่งเป็นไฟล์ PDF</div>
+            <input id="workFile" type="file" multiple>
+            <div class="muted" style="margin-top:6px">ไฟล์งาน 1 ไฟล์ (เช่น PDF, Word) หรือรูปภาพได้หลายรูป ระบบจะรวมรูปเป็น PDF ให้</div>
+            <div id="picked" class="picked"></div>
           </div>
           <div class="col-12">
             <label for="studentNote">หมายเหตุถึงอาจารย์ ถ้ามี</label>
@@ -328,10 +340,10 @@
       <div id="teacherDashboard"></div>
     </section>
 
-    <section class="panel">
+    <section class="panel" id="myAssignmentsPanel">
       <div class="panel-title">
         <div>
-          <h2>งานที่เปิดรับตอนนี้</h2>
+          <h2 id="assignTitle">งานที่เปิดรับตอนนี้</h2>
         </div>
       </div>
       <div id="openAssignments" class="assignments-list"></div>
@@ -368,6 +380,98 @@
       if (j && j.busy && i < retries) { await new Promise(r => setTimeout(r, 1500 * 2 ** i)); continue; }
       return j;
     }
+  }
+
+  /* ---------- เลือกไฟล์ / รูปภาพ ---------- */
+  let picked = [];   // [{ file, isImage, url }]
+  const isImageFile = f => /^image\//.test(f.type) || /\.(jpe?g|png|heic|heif|webp|gif)$/i.test(f.name);
+  function clearPicked() { picked.forEach(p => p.url && URL.revokeObjectURL(p.url)); picked = []; }
+  function renderPicked() {
+    const box = byId('picked');
+    if (!picked.length) { box.innerHTML = ''; return; }
+    if (!picked[0].isImage) {
+      const f = picked[0].file;
+      box.innerHTML = `<div class="doc-chip">📄 <b>${escapeHtml(f.name)}</b><span class="muted">${(f.size / 1048576).toFixed(1)} MB</span><button type="button" class="ghost" data-rm="0">ลบ</button></div>`;
+    } else {
+      box.innerHTML = picked.map((p, i) => `<div class="thumb"><img src="${p.url}" alt="รูปที่ ${i + 1}"><span class="n">${i + 1}</span><button type="button" data-rm="${i}" aria-label="ลบรูปที่ ${i + 1}">✕</button></div>`).join('')
+        + `<label for="workFile" class="thumb add">＋<small>เพิ่มรูป</small></label>`
+        + `<div class="picked-note">${picked.length} รูป → จะรวมเป็น PDF ${picked.length} หน้า ตามลำดับนี้</div>`;
+    }
+    box.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => {
+      const [r] = picked.splice(Number(b.dataset.rm), 1);
+      if (r && r.url) URL.revokeObjectURL(r.url);
+      renderPicked();
+    });
+  }
+  function onPickFiles(e) {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';   // ให้เลือกไฟล์เดิม/ถ่ายรูปซ้ำได้
+    if (!files.length) return;
+    const docs = files.filter(f => !isImageFile(f)), imgs = files.filter(isImageFile);
+    byId('receiptBox').innerHTML = '';
+    if (docs.length) {
+      if (docs.length > 1 || imgs.length) showBox('receiptBox', 'ไฟล์งานส่งได้ครั้งละ 1 ไฟล์ (ถ้าเป็นรูปภาพ เลือกได้หลายรูป)', 'warn');
+      clearPicked();
+      picked = [{ file: docs[0], isImage: false }];
+    } else {
+      if (picked.length && !picked[0].isImage) clearPicked();
+      imgs.forEach(f => picked.push({ file: f, isImage: true, url: URL.createObjectURL(f) }));
+      if (picked.length > 30) {
+        picked.splice(30).forEach(p => URL.revokeObjectURL(p.url));
+        showBox('receiptBox', 'เลือกรูปได้สูงสุด 30 รูป', 'warn');
+      }
+    }
+    renderPicked();
+  }
+
+  /* ---------- รวมรูปเป็น PDF (ย่อรูปให้เล็กลงก่อน) ---------- */
+  function loadJsPdf() {
+    if (window.jspdf) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      s.onload = resolve;
+      s.onerror = () => reject(new Error('โหลดตัวรวมรูปไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่'));
+      document.head.appendChild(s);
+    });
+  }
+  async function imageToJpeg(file) {
+    const url = URL.createObjectURL(file);
+    try {
+      const img = await new Promise((resolve, reject) => {
+        const i = new Image();
+        i.onload = () => resolve(i);
+        i.onerror = () => reject(new Error(`เปิดรูป "${file.name}" ไม่ได้ ลองถ่ายใหม่ หรือบันทึกรูปเป็น JPG`));
+        i.src = url;
+      });
+      const MAX = 1800;
+      const s = Math.min(1, MAX / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.round(img.naturalWidth * s), h = Math.round(img.naturalHeight * s);
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+      return { data: c.toDataURL('image/jpeg', 0.82), w, h };
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+  async function imagesToPdf(items, onStep) {
+    await loadJsPdf();
+    const { jsPDF } = window.jspdf;
+    let pdf = null;
+    for (let i = 0; i < items.length; i++) {
+      onStep(i + 1);
+      const im = await imageToJpeg(items[i].file);
+      const orient = im.w > im.h ? 'l' : 'p';
+      const pw = orient === 'p' ? 210 : 297, ph = orient === 'p' ? 297 : 210;
+      if (!pdf) pdf = new jsPDF({ orientation: orient, unit: 'mm', format: 'a4', compress: true });
+      else pdf.addPage('a4', orient);
+      const sc = Math.min(pw / im.w, ph / im.h), dw = im.w * sc, dh = im.h * sc;
+      pdf.addImage(im.data, 'JPEG', (pw - dw) / 2, (ph - dh) / 2, dw, dh);
+    }
+    return pdf.output('blob');
   }
 
   function readFileBase64(file) {
@@ -410,6 +514,8 @@
       }
     };
     bind('lookupBtn', lookupSubmitStudent);
+    const wf = byId('workFile');
+    if (wf && !wf.dataset.boundPick) { wf.dataset.boundPick = '1'; wf.addEventListener('change', onPickFiles); }
     bind('submitWorkBtn', submitWork);
     bind('checkStatusBtn', checkStatus);
     bind('loadTeacherDashboardBtn', loadTeacherDashboard);
@@ -471,7 +577,7 @@
     byId('teacherName').textContent = res.teacherName;
     byId('footerText').textContent = res.footer;
     byId('serverTime').textContent = 'เวลาเซิร์ฟเวอร์: ' + res.serverTime;
-    renderOpenAssignments(res.activeAssignments || []);
+    showAllOpen();
     fillTeacherFilters(res.courses || [], res.activeAssignments || []);
     if (res.diagnostics) renderDiagnostics(res.diagnostics, fromBootstrap ? 'server-bootstrap-ok' : 'client-refresh-ok');
   }
@@ -485,6 +591,12 @@
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
     ['submit','status','teacher'].forEach(t => byId('tab-' + t).classList.toggle('hidden', t !== tab));
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // หน้าแรก: งานที่เปิดรับทั้งหมด / หลังกรอกรหัส: เฉพาะงานของนักศึกษาคนนั้น
+  function showAllOpen() {
+    byId('assignTitle').textContent = 'งานที่เปิดรับตอนนี้';
+    renderOpenAssignments((appData && appData.activeAssignments) || []);
   }
 
   function renderOpenAssignments(list) {
@@ -572,6 +684,7 @@
     byId('receiptBox').innerHTML = '';
     byId('clientDebugBox').innerHTML = '';
     byId('submitFormBox').classList.add('hidden');
+    showAllOpen();
     if (!sid) return showBox('submitStudentBox', 'กรุณากรอกรหัสนักศึกษาก่อน', 'warn');
     if (!canCallServer_('submitStudentBox')) return;
 
@@ -598,15 +711,14 @@
     const hiddenSid = byId('hiddenStudentId');
     if (hiddenSid) hiddenSid.value = student.Student_ID || '';
 
-    // (ไม่แสดงข้อความเทคนิคเรื่อง Course_ID ให้นักศึกษาเห็น)
-    if ((!assignments || !assignments.length) && appData.activeAssignments && appData.activeAssignments.length) {
-      assignments = appData.activeAssignments;
-    }
+    assignments = assignments || [];
+    byId('assignTitle').textContent = 'งานที่เปิดรับของ ' + (student.Name || 'ฉัน');
+    renderOpenAssignments(assignments);
 
     const select = byId('assignmentSelect');
     if (!assignments.length) {
       byId('submitFormBox').classList.add('hidden');
-      box.innerHTML += '<div class="notice warn">ยังไม่มีงานที่เปิดรับสำหรับรายวิชาของนักศึกษาคนนี้</div>';
+      box.innerHTML += '<div class="notice warn">ตอนนี้ยังไม่มีงานที่เปิดรับในรายวิชาของคุณ</div>';
       return;
     }
     select.innerHTML = assignments.map(a => `<option value="${escapeAttr(a.Assignment_ID)}">${escapeHtml(a.Assignment_Name)} | กำหนด ${escapeHtml(a.Due_Date_Display || '-')}</option>`).join('');
@@ -617,39 +729,44 @@
     if (!currentStudent) return showGlobal('กรุณาตรวจรหัสนักศึกษาก่อนส่งงาน', 'warn');
     if (!canCallServer_('receiptBox')) return;
 
-    const form = byId('submissionForm');
-    const fileInput = byId('workFile');
     const assignmentValue = byId('assignmentSelect').value;
     if (!assignmentValue) return showBox('receiptBox', 'กรุณาเลือกงานก่อนส่ง', 'warn');
-    if (!fileInput.files || !fileInput.files[0]) return showBox('receiptBox', 'กรุณาเลือกไฟล์ก่อนส่ง', 'warn');
+    if (!picked.length) return showBox('receiptBox', 'กรุณาเลือกไฟล์หรือรูปภาพก่อนส่ง', 'warn');
 
     const hiddenSid = byId('hiddenStudentId');
     if (hiddenSid) hiddenSid.value = currentStudent.Student_ID || byId('submitStudentId').value.trim();
-
-    const file = fileInput.files[0];
-    const maxMb = Number((currentAssignments.find(a => String(a.Assignment_ID) === String(assignmentValue)) || {}).Max_File_MB || (appData.config && appData.config.MAX_FILE_MB_DEFAULT) || 15);
-    if (file.size > maxMb * 1024 * 1024) {
-      return showBox('receiptBox', 'ไฟล์นี้ใหญ่เกิน ' + maxMb + ' MB กรุณาลดขนาดไฟล์ก่อนส่ง', 'error');
-    }
+    const maxMb = Number((currentAssignments.find(a => String(a.Assignment_ID) === String(assignmentValue)) || {}).Max_File_MB || 15);
 
     setLoader('submitLoader', true);
     byId('submitWorkBtn').disabled = true;
     byId('clientDebugBox').innerHTML = '';
-    const sizeMb = (file.size / 1024 / 1024).toFixed(1);
+    let stage = 'กำลังเตรียมไฟล์';
     const t0 = Date.now();
-    const tick = () => showBox('receiptBox', `กำลังอัปโหลด ${file.name} (${sizeMb} MB) … ${Math.round((Date.now() - t0) / 1000)} วินาที — อย่าปิดหน้านี้`, 'warn');
+    const tick = () => showBox('receiptBox', `${stage} … ${Math.round((Date.now() - t0) / 1000)} วินาที — อย่าปิดหน้านี้`, 'warn');
     tick();
     const timer = setInterval(tick, 1000);
 
     let res;
     try {
-      const base64 = await readFileBase64(file);
+      let upload;
+      if (picked[0].isImage) {
+        const blob = await imagesToPdf(picked, i => { stage = `กำลังรวมรูป ${i}/${picked.length} เป็น PDF`; tick(); });
+        upload = { blob, name: `รูปงาน_${picked.length}หน้า.pdf`, type: 'application/pdf' };
+      } else {
+        const f = picked[0].file;
+        upload = { blob: f, name: f.name, type: f.type || 'application/octet-stream' };
+      }
+      if (upload.blob.size > maxMb * 1024 * 1024) {
+        throw new Error(`ไฟล์ใหญ่เกิน ${maxMb} MB (${(upload.blob.size / 1048576).toFixed(1)} MB)` + (picked[0].isImage ? ' กรุณาลดจำนวนรูป' : ' กรุณาลดขนาดไฟล์'));
+      }
+      stage = `กำลังอัปโหลด ${upload.name} (${(upload.blob.size / 1048576).toFixed(1)} MB)`; tick();
+      const base64 = await readFileBase64(upload.blob);
       // ไม่ retry อัตโนมัติ กันส่งซ้ำโดยไม่ตั้งใจ
       res = await api('submit', {
         studentId: hiddenSid ? hiddenSid.value : currentStudent.Student_ID,
         assignmentId: assignmentValue,
         note: byId('studentNote').value,
-        file: { name: file.name, mimeType: file.type || 'application/octet-stream', base64 }
+        file: { name: upload.name, mimeType: upload.type, base64 }
       }, 0);
     } catch (err) {
       res = { ok: false, message: errorMessage_(err) };
@@ -662,7 +779,7 @@
       return showBox('receiptBox', ((res && res.message) || 'ส่งงานไม่สำเร็จ') + extra, 'error');
     }
     renderReceipt(res);
-    byId('workFile').value = '';
+    clearPicked(); renderPicked();
     byId('studentNote').value = '';
   }
 
